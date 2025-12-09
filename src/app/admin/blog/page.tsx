@@ -11,7 +11,7 @@ const initialBlogPosts = [
 ]
 
 export default function ManageBlog() {
-  const [posts, setPosts] = useState(initialBlogPosts)
+  const [posts,] = useState(initialBlogPosts)
   const [showForm, setShowForm] = useState(false)
 
   return (

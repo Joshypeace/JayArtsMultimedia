@@ -22,7 +22,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-        <p className="text-foreground/60">Welcome back! Here's your business overview.</p>
+        <p className="text-foreground/60">Welcome back! Here&apos;s your business overview.</p>
       </motion.div>
 
       {/* Stats Grid */}

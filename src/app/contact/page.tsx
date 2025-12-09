@@ -60,7 +60,7 @@ export default function Contact() {
               transition={{ delay: 0.2, duration: 0.8 }}
               className="text-xl text-foreground/70"
             >
-              Have questions? We'd love to hear from you. Send us a message!
+              Have questions? We&apos;d love to hear from you. Send us a message!
             </motion.p>
           </div>
         </section>
@@ -146,7 +146,7 @@ export default function Contact() {
                     animate={{ opacity: 1, y: 0 }}
                     className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-center"
                   >
-                    Message sent successfully! We'll be in touch soon.
+                    Message sent successfully! We&apos;ll be in touch soon.
                   </motion.div>
                 )}
               </form>
@@ -162,7 +162,7 @@ export default function Contact() {
               <div>
                 <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
                 <p className="text-foreground/70 leading-relaxed mb-8">
-                  Reach out to us through any of the following channels. We're here to answer your questions and help
+                  Reach out to us through any of the following channels. We&apos;re here to answer your questions and help
                   bring your vision to life.
                 </p>
               </div>

@@ -23,7 +23,7 @@ export default function Booking() {
   })
 
   const [submitted, setSubmitted] = useState(false)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [, setFocusedField] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -91,7 +91,7 @@ export default function Booking() {
               transition={{ delay: 0.2, duration: 0.8 }}
               className="text-xl text-foreground/70"
             >
-              Let's create something amazing together
+              Let&apos;s create something amazing together
             </motion.p>
           </div>
         </section>
@@ -107,7 +107,7 @@ export default function Booking() {
             >
               <form onSubmit={handleSubmit} className="space-y-8">
                 <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
-                  {formSections.map((section, sectionIdx) => (
+                  {formSections.map((section, ) => (
                     <motion.div key={section.title} variants={itemVariants} className="space-y-4">
                       <h3 className="text-lg font-semibold text-primary border-b border-border pb-3">
                         {section.title}
@@ -270,7 +270,7 @@ export default function Booking() {
                     animate={{ opacity: 1, y: 0 }}
                     className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-center"
                   >
-                    Thank you! We'll get back to you within 24 hours.
+                    Thank you! We&apos;ll get back to you within 24 hours.
                   </motion.div>
                 )}
               </form>

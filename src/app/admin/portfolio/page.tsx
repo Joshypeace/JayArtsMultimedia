@@ -11,7 +11,7 @@ const initialPortfolio = [
 ]
 
 export default function ManagePortfolio() {
-  const [items, setItems] = useState(initialPortfolio)
+  const [items, ] = useState(initialPortfolio)
   const [showForm, setShowForm] = useState(false)
 
   return (

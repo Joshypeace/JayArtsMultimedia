@@ -2,7 +2,7 @@
 
 import AdminNavigation from "@/components/admin/admin-navigation"
 
-export default function AdminLayout({ children }: { children: any }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-background">
       <AdminNavigation />

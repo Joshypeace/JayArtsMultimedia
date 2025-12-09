@@ -7,7 +7,17 @@ import { Calendar, ArrowLeft, Share2 } from "lucide-react"
 import PublicNavBar from "@/components/public/navbar"
 import Footer from "@/components/public/footer"
 
-const blogPosts: Record<string, any> = {
+interface BlogPost {
+  title: string
+  author: string
+  date: string
+  category: string
+  image: string
+  readTime: string
+  content: string
+}
+
+const blogPosts: Record<string, BlogPost> = {
   "mastering-product-photography": {
     title: "Mastering Product Photography",
     author: "Alex Rivers",
