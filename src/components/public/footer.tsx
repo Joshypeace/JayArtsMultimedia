@@ -129,17 +129,22 @@ export default function Footer() {
         >
           <p className="text-foreground/60 text-sm">© {currentYear} JayArts Multimedia. All rights reserved.</p>
           <div className="flex gap-6">
-            {[
-              { label: "Privacy Policy", href: "#" },
-              { label: "Terms of Service", href: "#" },
-            ].map((item) => (
-              <motion.div key={item.href} whileHover={{ x: 3 }} transition={{ type: "spring" }}>
-                <Link href={item.href} className="text-foreground/60 hover:text-primary text-sm transition-colors">
-                  {item.label}
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+  {[
+    { label: "Privacy Policy", href: "#" },
+    { label: "Terms of Service", href: "#" },
+  ].map((item) => (
+    <motion.div
+      key={item.label} // <-- FIX HERE
+      whileHover={{ x: 3 }}
+      transition={{ type: "spring" }}
+    >
+      <Link href={item.href} className="text-foreground/60 hover:text-primary text-sm transition-colors">
+        {item.label}
+      </Link>
+    </motion.div>
+  ))}
+</div>
+
         </motion.div>
       </div>
     </footer>
