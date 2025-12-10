@@ -1,0 +1,371 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ServiceCategory {
+  PHOTOGRAPHY
+  VIDEOGRAPHY
+  GRAPHIC_DESIGN
+  ALL // For portfolio filtering
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum InquiryStatus {
+  NEW
+  RESPONDED
+  RESOLVED
+  SPAM
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// User model for authentication and admin access
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  role          UserRole  @default(EDITOR)
+  image         String?
+  emailVerified Boolean   @default(false)
+  emailVerifiedAt DateTime?
+  lastLogin     DateTime?
+  
+  // Relations
+  blogPosts     BlogPost[]
+  portfolioItems PortfolioItem[]
+  services      Service[]
+  bookings      Booking[]
+  inquiries     Inquiry[]
+  teamMembers   TeamMember[]
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Indexes
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+}
+
+// Portfolio items for showcasing work
+model PortfolioItem {
+  id          String         @id @default(cuid())
+  title       String
+  slug        String         @unique
+  description String?
+  content     String?        // For detailed descriptions
+  
+  // Media
+  imageUrl    String
+  videoUrl    String?
+  thumbnailUrl String
+  
+  // Categorization
+  category    ServiceCategory
+  tags        String[]       // For filtering (e.g., ["wedding", "corporate", "branding"])
+  
+  // Metadata
+  featured    Boolean        @default(false)
+  order       Int            @default(0) // For manual ordering
+  views       Int            @default(0)
+  
+  // Relations
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId   String?
+  service     Service?       @relation(fields: [serviceId], references: [id])
+  
+  // Timestamps
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  publishedAt DateTime?      // For scheduled publishing
+  
+  // Indexes
+  @@index([category])
+  @@index([featured])
+  @@index([publishedAt])
+  @@index([createdAt])
+  @@index([slug])
+}
+
+// Blog posts
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String   // Full blog content
+  coverImage  String?
+  
+  // SEO
+  metaTitle   String?
+  metaDescription String?
+  keywords    String[]
+  
+  // Publishing
+  published   Boolean  @default(false)
+  featured    Boolean  @default(false)
+  views       Int      @default(0)
+  
+  // Relations
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+  
+  // Indexes
+  @@index([slug])
+  @@index([published])
+  @@index([featured])
+  @@index([publishedAt])
+  @@index([createdAt])
+}
+
+// Services offered
+model Service {
+  id           String         @id @default(cuid())
+  name         String
+  slug         String         @unique
+  description  String
+  category     ServiceCategory
+  icon         String?        // For UI display
+  
+  // Pricing
+  basePrice    Decimal?       // In dollars
+  priceRange   Json?          // { min: 500, max: 5000 } or package-based
+  
+  // Package structure
+  packages     Package[]
+  deliverables String[]       // Array of deliverables
+  features     String[]       // Key features
+  
+  // Display
+  featured     Boolean        @default(false)
+  order        Int            @default(0)
+  
+  // Relations
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  portfolioItems PortfolioItem[]
+  bookings     Booking[]
+  
+  // Timestamps
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  
+  // Indexes
+  @@index([category])
+  @@index([featured])
+  @@index([slug])
+}
+
+// Service packages
+model Package {
+  id          String   @id @default(cuid())
+  name        String   // e.g., "Basic", "Premium", "Enterprise"
+  description String?
+  price       Decimal  // Package price
+  currency    String   @default("USD")
+  
+  // Package details
+  features    String[] // What's included
+  deliverables String[]
+  duration    String?  // e.g., "2 weeks", "1 month"
+  revisions   Int?     // Number of revisions included
+  
+  // Relations
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Indexes
+  @@index([serviceId])
+}
+
+// Booking/Event requests
+model Booking {
+  id          String        @id @default(cuid())
+  
+  // Event details
+  eventType   String        // e.g., Wedding, Corporate, Product Launch
+  eventDate   DateTime
+  startTime   String?
+  endTime     String?
+  venue       String?
+  location    Json?         // { address: "", city: "", coordinates: {} }
+  
+  // Client details
+  clientName  String
+  clientEmail String
+  clientPhone String?
+  company     String?
+  
+  // Budget and requirements
+  budget      Decimal?
+  budgetRange String?       // e.g., "1000-5000"
+  requirements String?      // JSON string for additional requirements
+  additionalNotes String?
+  
+  // Status tracking
+  status      BookingStatus @default(PENDING)
+  statusNotes String?       // Internal notes about status changes
+  
+  // Relations
+  serviceId   String?
+  service     Service?      @relation(fields: [serviceId], references: [id])
+  assignedToId String?
+  assignedTo  User?         @relation(fields: [assignedToId], references: [id])
+  
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Indexes
+  @@index([eventDate])
+  @@index([status])
+  @@index([clientEmail])
+  @@index([createdAt])
+}
+
+// Contact form inquiries
+model Inquiry {
+  id          String        @id @default(cuid())
+  
+  // Contact info
+  name        String
+  email       String
+  phone       String?
+  company     String?
+  
+  // Inquiry details
+  subject     String
+  message     String
+  source      String        @default("contact_form") // contact_form, booking_page, etc.
+  category    ServiceCategory?
+  
+  // Status tracking
+  status      InquiryStatus @default(NEW)
+  response    String?       // Admin response
+  respondedAt DateTime?
+  
+  // Relations
+  assignedToId String?
+  assignedTo  User?         @relation(fields: [assignedToId], references: [id])
+  
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Indexes
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// Team members
+model TeamMember {
+  id          String   @id @default(cuid())
+  name        String
+  title       String
+  bio         String?
+  
+  // Media
+  image       String
+  socialLinks Json?    // { twitter: "", instagram: "", linkedin: "" }
+  
+  // Display
+  order       Int      @default(0)
+  featured    Boolean  @default(false)
+  
+  // Relations
+  userId      String?  // Link to user account if they have one
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Indexes
+  @@index([order])
+  @@index([featured])
+}
+
+// Site settings/configuration
+model SiteSettings {
+  id          String   @id @default(cuid())
+  
+  // General
+  siteName    String   @default("JayArts Multimedia")
+  siteDescription String?
+  contactEmail String
+  phone       String?
+  address     String?
+  
+  // Social media
+  socialLinks Json?    // JSON object with all social links
+  
+  // SEO
+  metaTitle   String?
+  metaDescription String?
+  keywords    String[]
+  
+  // Analytics
+  googleAnalyticsId String?
+  facebookPixelId String?
+  
+  // Timestamps
+  updatedAt   DateTime @updatedAt
+  
+  // Ensure only one settings record exists
+  @@unique([id])
+}
+
+// Newsletter subscriptions
+model Subscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  
+  // Preferences
+  subscribed  Boolean  @default(true)
+  preferences Json?    // { categories: [], frequency: "weekly" }
+  
+  // Timestamps
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  updatedAt    DateTime @updatedAt
+  
+  // Indexes
+  @@index([email])
+  @@index([subscribed])
+}
