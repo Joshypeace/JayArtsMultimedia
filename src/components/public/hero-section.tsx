@@ -79,7 +79,7 @@ export default function HeroSection() {
           transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}
         >
           <div className="flex flex-col items-center gap-2">
-            <span className="text-xs sm:text-sm text-foreground/50">Scroll to explore</span>
+            {/* <span className="text-xs sm:text-sm text-foreground/50">Scroll to explore</span> */}
             <div className="w-6 h-10 border-2 border-primary rounded-full flex justify-center">
               <motion.div
                 className="w-1 h-2 bg-primary rounded-full"
