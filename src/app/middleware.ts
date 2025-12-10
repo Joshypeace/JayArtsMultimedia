@@ -1,58 +1,57 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
-    const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
-    const isAuthRoute = 
-      req.nextUrl.pathname === "/admin/login" || 
-      req.nextUrl.pathname === "/admin/register";
-
-    // Redirect logged-in users away from auth pages
-    if (token && isAuthRoute) {
-      return NextResponse.redirect(new URL("/admin", req.url));
-    }
-
-    // For admin routes, check user role
-    if (token && isAdminRoute && !isAuthRoute) {
-      const allowedRoles = ["ADMIN", "EDITOR"];
-      if (!allowedRoles.includes(token.role as string)) {
-        return NextResponse.redirect(new URL("/admin/login", req.url));
-      }
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
-        const isAuthRoute = 
-          req.nextUrl.pathname === "/admin/login" || 
-          req.nextUrl.pathname === "/admin/register";
-
-        // Allow access to auth pages without token
-        if (isAuthRoute) return true;
-
-        // Require token for other admin routes
-        if (isAdminRoute) {
-          return !!token;
-        }
-
-        // Public routes
-        return true;
-      },
-    },
-    pages: {
-      signIn: "/admin/login",
-    },
+export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname
+  
+  // Define public routes (no auth required)
+  const publicRoutes = [
+    '/admin/login',
+    '/admin/register',
+    '/api/auth',
+  ]
+  
+  const isPublicRoute = publicRoutes.some(route => path.startsWith(route))
+  
+  // If it's a public route, allow access
+  if (isPublicRoute) {
+    return NextResponse.next()
   }
-);
+  
+  // Check for admin routes (excluding public ones)
+  const isAdminRoute = path.startsWith('/admin')
+  
+  if (isAdminRoute) {
+    // Get the token
+    const token = await getToken({ 
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET || 'your-secret-key' // Fallback for debugging
+    })
+    
+    // If no token, redirect to login
+    if (!token) {
+      const loginUrl = new URL('/admin/login', request.url)
+      loginUrl.searchParams.set('callbackUrl', path)
+      return NextResponse.redirect(loginUrl)
+    }
+    
+    // Check if user has proper role
+    const allowedRoles = ['ADMIN', 'EDITOR']
+    if (!allowedRoles.includes(token.role as string)) {
+      const loginUrl = new URL('/admin/login', request.url)
+      loginUrl.searchParams.set('error', 'Unauthorized')
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+  
+  return NextResponse.next()
+}
 
+// Make sure ALL admin routes are matched
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/api/admin/:path*",
-  ],
-};
+    '/admin/:path*',
+    '/admin',
+  ]
+}
