@@ -1,57 +1,27 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get('auth-token')?.value;
   
-  // Define public routes (no auth required)
-  const publicRoutes = [
-    '/admin/login',
-    '/admin/register',
-    '/api/auth',
-  ]
+  // Public routes that don't require auth
+  const publicRoutes = ['/login', '/register', '/'];
   
-  const isPublicRoute = publicRoutes.some(route => path.startsWith(route))
-  
-  // If it's a public route, allow access
-  if (isPublicRoute) {
-    return NextResponse.next()
+  // If trying to access admin without token
+  if (pathname.startsWith('/admin') && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
   
-  // Check for admin routes (excluding public ones)
-  const isAdminRoute = path.startsWith('/admin')
-  
-  if (isAdminRoute) {
-    // Get the token
-    const token = await getToken({ 
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET || 'your-secret-key' // Fallback for debugging
-    })
-    
-    // If no token, redirect to login
-    if (!token) {
-      const loginUrl = new URL('/admin/login', request.url)
-      loginUrl.searchParams.set('callbackUrl', path)
-      return NextResponse.redirect(loginUrl)
-    }
-    
-    // Check if user has proper role
-    const allowedRoles = ['ADMIN', 'EDITOR']
-    if (!allowedRoles.includes(token.role as string)) {
-      const loginUrl = new URL('/admin/login', request.url)
-      loginUrl.searchParams.set('error', 'Unauthorized')
-      return NextResponse.redirect(loginUrl)
-    }
+  // If logged in but trying to access login/register
+  if ((pathname === '/login' || pathname === '/register') && token) {
+    return NextResponse.redirect(new URL('/admin', request.url));
   }
   
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
-// Make sure ALL admin routes are matched
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/admin',
-  ]
-}
+  matcher: ['/admin/:path*', '/login', '/register'],
+};

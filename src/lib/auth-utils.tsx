@@ -34,10 +34,23 @@ export async function requireAdmin() {
 }
 
 export async function hashPassword(password: string): Promise<string> {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
+  try {
+    const salt = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, salt);
+  } catch (error) {
+    console.error("Error hashing password:", error);
+    throw new Error("Failed to hash password");
+  }
 }
 
+export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  try {
+    return await bcrypt.compare(password, hashedPassword);
+  } catch (error) {
+    console.error("Error verifying password:", error);
+    throw new Error("Failed to verify password");
+  }
+}
 export async function createFirstAdminUser() {
   const adminExists = await prisma.user.findFirst({
     where: {

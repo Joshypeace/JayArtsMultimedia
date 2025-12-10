@@ -3,7 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import axios from "axios";
 
 declare module "next-auth" {
   interface User {
@@ -37,31 +36,30 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
         recaptchaToken: { label: "Recaptcha Token", type: "hidden" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Please enter an email and password");
-        }
+     async authorize(credentials) {
+  if (!credentials?.email || !credentials?.password) {
+    throw new Error("Please enter an email and password");
+  }
 
-        // Verify reCAPTCHA token
-        try {
-          const recaptchaResponse = await axios.post(
-            `https://www.google.com/recaptcha/api/siteverify`,
-            null,
-            {
-              params: {
-                secret: process.env.RECAPTCHA_SECRET_KEY,
-                response: credentials.recaptchaToken,
-              },
-            }
-          );
+  // Verify reCAPTCHA token
+  try {
+    const recaptchaResponse = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${credentials.recaptchaToken}`,
+      {
+        method: 'POST',
+      }
+    );
 
-          if (!recaptchaResponse.data.success) {
-            throw new Error("reCAPTCHA verification failed");
-          }
-        } catch (error) {
-          console.error("reCAPTCHA verification error:", error);
-          throw new Error("Failed to verify reCAPTCHA");
-        }
+    const recaptchaData = await recaptchaResponse.json();
+    
+    if (!recaptchaData.success) {
+      throw new Error("reCAPTCHA verification failed");
+    }
+  } catch (error) {
+    console.error("reCAPTCHA verification error:", error);
+    throw new Error("Failed to verify reCAPTCHA");
+  }
+
 
         // Find user by email
         const user = await prisma.user.findUnique({
