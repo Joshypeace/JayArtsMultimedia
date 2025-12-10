@@ -1,14 +1,13 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ReCaptcha from "@/components/ui/recaptcha";
 import { Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
@@ -16,28 +15,17 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
-  const { executeRecaptcha } = useGoogleReCaptcha();
-
-  useEffect(() => {
-    if (error || success) {
-      const timer = setTimeout(() => {
-        setError("");
-        setSuccess("");
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, success]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
-    // Validation
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -48,21 +36,19 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!executeRecaptcha) {
-      setError("reCAPTCHA not available");
+    if (!recaptchaToken) {
+      setError("Please wait for reCAPTCHA verification");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Get reCAPTCHA token
-      const recaptchaToken = await executeRecaptcha("admin_register");
-
-      // Register user
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("/api/admin/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           name,
           email,
@@ -79,117 +65,122 @@ export default function RegisterPage() {
 
       setSuccess("Account created successfully! Redirecting to login...");
       
-      // Redirect to login after success
+      // Redirect to login after 2 seconds
       setTimeout(() => {
         router.push("/admin/login");
       }, 2000);
     } catch (error: Error | unknown) {
-      console.error("Registration error:", error);
-      setError(error instanceof Error ? error.message : "Registration failed");
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black p-4">
-      <Card className="w-full max-w-md border-gray-800 bg-gray-900/50 backdrop-blur-sm">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-white">Create Admin Account</CardTitle>
-          <CardDescription className="text-gray-400">
-            Register a new admin account
-          </CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Create Admin Account</CardTitle>
+          <CardDescription>Register a new admin account</CardDescription>
         </CardHeader>
         <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {success && (
-            <Alert className="mb-4 bg-green-900/20 border-green-800">
-              <AlertDescription className="text-green-400">{success}</AlertDescription>
-            </Alert>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Full Name</label>
+            <div>
+              <label className="text-sm font-medium">Name</label>
               <Input
                 type="text"
-                placeholder="John Doe"
+                placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
                 disabled={isLoading}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Email</label>
+            <div>
+              <label className="text-sm font-medium">Email</label>
               <Input
                 type="email"
-                placeholder="admin@jayarts.com"
+                placeholder="admin@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
                 disabled={isLoading}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Password</label>
+            <div>
+              <label className="text-sm font-medium">Password</label>
               <Input
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
                 disabled={isLoading}
               />
-              <p className="text-xs text-gray-500">Minimum 8 characters</p>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Confirm Password</label>
+            <div>
+              <label className="text-sm font-medium">Confirm Password</label>
               <Input
                 type="password"
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
                 disabled={isLoading}
               />
             </div>
-            <Button
-              type="submit"
-              className="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-700 hover:to-yellow-600 text-white"
-              disabled={isLoading || !executeRecaptcha}
-            >
+            
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            
+            {success && (
+              <Alert>
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Account...
+                  Creating account...
                 </>
               ) : (
                 "Create Account"
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-400">
-            Already have an account?{" "}
-            <Link
-              href="/admin/login"
-              className="font-medium text-amber-400 hover:text-amber-300 hover:underline"
-            >
-              Sign in here
-            </Link>
+          
+          <div className="mt-4 text-center text-sm space-y-2">
+            <div>
+              Already have an account?{" "}
+              <Link href="/admin/login" className="text-primary hover:underline font-medium">
+                Sign in here
+              </Link>
+            </div>
+            <div>
+              <Link 
+                href="/" 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Back to website
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>
+      
+      <ReCaptcha 
+        action="register" 
+        onVerify={setRecaptchaToken} 
+      />
     </div>
   );
 }

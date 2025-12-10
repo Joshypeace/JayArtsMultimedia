@@ -1,25 +1,25 @@
-// app/api/auth/register/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { verifyRecaptcha } from "@/lib/recaptcha";
+import { hashPassword } from "@/lib/auth-utils";
+import axios from "axios";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { name, email, password, recaptchaToken } = body;
-
-    // Validate input
-    if (!name || !email || !password || !recaptchaToken) {
-      return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 }
-      );
-    }
+    const { name, email, password, recaptchaToken } = await request.json();
 
     // Verify reCAPTCHA
-    const recaptchaValid = await verifyRecaptcha(recaptchaToken);
-    if (!recaptchaValid) {
+    const recaptchaResponse = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      null,
+      {
+        params: {
+          secret: process.env.RECAPTCHA_SECRET_KEY,
+          response: recaptchaToken,
+        },
+      }
+    );
+
+    if (!recaptchaResponse.data.success) {
       return NextResponse.json(
         { error: "reCAPTCHA verification failed" },
         { status: 400 }
@@ -28,47 +28,46 @@ export async function POST(request: NextRequest) {
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "User with this email already exists" },
-        { status: 409 }
+        { error: "User already exists" },
+        { status: 400 }
       );
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await hashPassword(password);
 
-    // Create user with ADMIN role (first user only gets ADMIN)
-    // Subsequent users can be created by admin with specific roles
+    // Create user (first user gets ADMIN role, others get EDITOR by default)
     const userCount = await prisma.user.count();
     const role = userCount === 0 ? "ADMIN" : "EDITOR";
 
     const user = await prisma.user.create({
       data: {
         name,
-        email: email.toLowerCase(),
+        email,
         passwordHash: hashedPassword,
         role,
-        emailVerified: true, // Auto-verify for admin panel (adjust as needed)
-        emailVerifiedAt: new Date(),
+        emailVerified: role === "ADMIN", // Auto-verify first admin
       },
     });
 
-    // Remove password hash from response
-    const { passwordHash: _, ...userWithoutPassword } = user;
-
     return NextResponse.json(
       { 
-        message: "User created successfully", 
-        user: userWithoutPassword,
-        role 
+        message: "User created successfully",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        }
       },
       { status: 201 }
     );
-  } catch (error: Error | unknown) {
+  } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

@@ -1,12 +1,22 @@
-"use client"
+import { getCurrentUser } from "@/lib/auth-utils";
+import AdminNavigation from "@/components/admin/admin-navigation";
+import { redirect } from "next/navigation";
 
-import AdminNavigation from "@/components/admin/admin-navigation"
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    redirect("/admin/login");
+  }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-background">
-      <AdminNavigation />
+      <AdminNavigation/>
       <main className="flex-1 overflow-auto">{children}</main>
     </div>
-  )
+  );
 }
