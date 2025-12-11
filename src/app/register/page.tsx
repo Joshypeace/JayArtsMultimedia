@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import ReCaptcha from "@/components/ui/recaptcha";
 import { Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
@@ -15,7 +14,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -26,7 +24,6 @@ export default function RegisterPage() {
     setError("");
     setSuccess("");
 
-    // Validate inputs
     if (!name.trim()) {
       setError("Please enter your name");
       return;
@@ -52,11 +49,6 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA verification");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -69,18 +61,16 @@ export default function RegisterPage() {
           name: name.trim(),
           email: email.trim().toLowerCase(),
           password,
-          recaptchaToken,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Registration failed. Please try again.");
+        throw new Error(data.error || "Registration failed");
       }
 
       setSuccess("Account created successfully! Redirecting to login...");
-      setRecaptchaToken(""); // Reset reCAPTCHA on success
       
       // Clear form
       setName("");
@@ -96,11 +86,8 @@ export default function RegisterPage() {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setError("An unexpected error occurred");
       }
-      
-      // Reset reCAPTCHA on error
-      setRecaptchaToken("");
     } finally {
       setIsLoading(false);
     }
@@ -200,7 +187,7 @@ export default function RegisterPage() {
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isLoading || !recaptchaToken}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <>
@@ -235,17 +222,6 @@ export default function RegisterPage() {
           </div>
         </CardContent>
       </Card>
-      
-      <ReCaptcha 
-        action="register" 
-        onVerify={(token: string) => {
-          setRecaptchaToken(token);
-          // Clear any previous reCAPTCHA errors when verified
-          if (error.includes("reCAPTCHA")) {
-            setError("");
-          }
-        }} 
-      />
     </div>
   );
 }

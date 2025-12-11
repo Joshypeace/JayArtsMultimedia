@@ -2,35 +2,29 @@
 
 import { useState, FormEvent } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import ReCaptcha from "@/components/ui/recaptcha";
 import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/admin";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     
-    // Validate inputs
     if (!email || !password) {
       setError("Please enter both email and password");
-      return;
-    }
-    
-    if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA verification");
       return;
     }
 
@@ -40,33 +34,19 @@ export default function LoginPage() {
       const result = await signIn("credentials", {
         email,
         password,
-        recaptchaToken,
         redirect: false,
+        callbackUrl
       });
 
       if (result?.error) {
-        // Handle specific error messages
-        const errorMessage = result.error.includes("No user found") 
-          ? "Invalid email or password"
-          : result.error.includes("Incorrect password")
-          ? "Invalid email or password"
-          : result.error.includes("permission")
-          ? "You don't have permission to access the admin panel"
-          : "Login failed. Please try again.";
-        
-        setError(errorMessage);
-        
-        // Reset reCAPTCHA on error
-        setRecaptchaToken("");
+        setError("Invalid email or password");
       } else {
-        // Successful login - redirect to admin dashboard
-        router.push("/admin");
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError("An unexpected error occurred. Please try again.");
-      setRecaptchaToken("");
+      setError("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +105,7 @@ export default function LoginPage() {
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isLoading || !recaptchaToken}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <>
@@ -160,17 +140,6 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
-      
-      <ReCaptcha 
-        action="login" 
-        onVerify={(token: string) => {
-          setRecaptchaToken(token);
-          // Clear any previous errors when reCAPTCHA is verified
-          if (error.includes("reCAPTCHA")) {
-            setError("");
-          }
-        }} 
-      />
     </div>
   );
 }

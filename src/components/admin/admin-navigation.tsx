@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -33,14 +33,26 @@ const navItems = [
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
-export default function AdminNavigation() {
+// Define the props interface
+interface AdminNavigationProps {
+  user?: {
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+export default function AdminNavigation({ user }: AdminNavigationProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
+  
+  // Use the passed user prop or get it from session
   const { data: session } = useSession()
+  const currentUser = user || session?.user
 
   const handleLogout = async () => {
     await signOut({ 
-      callbackUrl: "/admin/login",
+      callbackUrl: "/",
       redirect: true 
     })
   }
@@ -73,17 +85,17 @@ export default function AdminNavigation() {
         </div>
 
         {/* User Info */}
-        {session?.user && (
+        {currentUser && (
           <div className={`flex items-center gap-3 p-3 rounded-lg bg-primary/5 ${!isOpen && "justify-center"}`}>
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
               <User size={16} className="text-primary" />
             </div>
             {isOpen && (
               <div className="min-w-0">
-                <p className="font-medium text-sm truncate">{session.user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
+                <p className="font-medium text-sm truncate">{currentUser.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
                 <span className="text-xs px-2 py-0.5 mt-1 rounded-full bg-primary/10 text-primary inline-block">
-                  {session.user.role}
+                  {currentUser.role}
                 </span>
               </div>
             )}
