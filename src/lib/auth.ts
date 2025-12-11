@@ -1,122 +1,87 @@
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
+import { NextAuthOptions, getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
 import { UserRole } from "../generated/prisma/client";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+type Credentials = {
+  email: string;
+  password: string;
+};
+
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+
+  session: {
+    strategy: "jwt",
+  },
+
   pages: {
     signIn: "/login",
-    error: "/login",
   },
+
   providers: [
     CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+
+      async authorize(rawCreds) {
+        const credentials = rawCreds as Credentials;
+
+        if (!credentials?.email || !credentials?.password) return null;
 
         const user = await prisma.user.findUnique({
-          where: { 
-            email: credentials.email as string 
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            passwordHash: true,
-            role: true,
-            emailVerified: true,
-            image: true
-          }
+          where: { email: credentials.email.toLowerCase() },
         });
 
-        if (!user || !user.passwordHash) {
-          return null;
-        }
+        if (!user || !user.passwordHash) return null;
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
+        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!valid) return null;
 
-        if (!isValid) {
-          return null;
-        }
-
-        // Return user object matching the User interface
         return {
           id: user.id,
-          email: user.email!,
+          email: user.email,
           name: user.name,
           role: user.role,
-          image: user.image,
-          emailVerified: user.emailVerified
+          image: user.image ?? undefined,
         };
-      }
-    })
+      },
+    }),
   ],
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = (user as { role: UserRole }).role;
       }
       return token;
     },
+
     async session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
+      if (session.user) {
+        session.user.id = token.id as string;
         session.user.role = token.role as UserRole;
       }
       return session;
-    }
+    },
   },
-  events: {
-    async signIn({ user }) {
-      if (user.id) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLogin: new Date() }
-        });
-      }
-    }
-  }
-});
 
-// Extend the default session types
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      role: UserRole;
-    };
-  }
-  
-  interface User {
-    id: string;
-    name: string | null;
-    email: string;
-    role: UserRole;
-    image?: string | null;
-    emailVerified?: Date | null;
-  }
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+// Add this function for server-side auth
+export async function auth() {
+  return await getServerSession(authOptions);
 }
 
-declare module "@auth/core/jwt" {
-  interface JWT {
-    id?: string;
-    role?: UserRole;
-  }
+// Optional: Helper to get current user
+export async function getCurrentUser() {
+  const session = await auth();
+  return session?.user || null;
 }

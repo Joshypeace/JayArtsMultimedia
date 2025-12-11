@@ -21,6 +21,7 @@ import {
 import { useState } from "react"
 import { signOut } from "next-auth/react"
 import { useSession } from "next-auth/react"
+import type { UserRole } from "../../generated/prisma/client"
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: BarChart3 },
@@ -33,22 +34,24 @@ const navItems = [
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
-// Define the props interface
+// Define the props interface to match your session user type
 interface AdminNavigationProps {
   user?: {
-    name: string;
-    email: string;
-    role: string;
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    role: UserRole;
+    image?: string | null;
   };
 }
 
-export default function AdminNavigation({ user }: AdminNavigationProps) {
+export default function AdminNavigation({ user: propUser }: AdminNavigationProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   
   // Use the passed user prop or get it from session
   const { data: session } = useSession()
-  const currentUser = user || session?.user
+  const currentUser = propUser || session?.user
 
   const handleLogout = async () => {
     await signOut({ 
@@ -88,12 +91,24 @@ export default function AdminNavigation({ user }: AdminNavigationProps) {
         {currentUser && (
           <div className={`flex items-center gap-3 p-3 rounded-lg bg-primary/5 ${!isOpen && "justify-center"}`}>
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-              <User size={16} className="text-primary" />
+              {currentUser.image ? (
+                <img 
+                  src={currentUser.image} 
+                  alt={currentUser.name || "User"} 
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <User size={16} className="text-primary" />
+              )}
             </div>
             {isOpen && (
               <div className="min-w-0">
-                <p className="font-medium text-sm truncate">{currentUser.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
+                <p className="font-medium text-sm truncate">
+                  {currentUser.name || "User"}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {currentUser.email || "No email"}
+                </p>
                 <span className="text-xs px-2 py-0.5 mt-1 rounded-full bg-primary/10 text-primary inline-block">
                   {currentUser.role}
                 </span>
