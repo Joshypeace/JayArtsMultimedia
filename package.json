@@ -90,7 +90,7 @@
     "postcss": "^8.5",
     "prisma": "^7.1.0",
     "tailwindcss": "^4.1.9",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   },
   "pnpm": {
     "overrides": {
