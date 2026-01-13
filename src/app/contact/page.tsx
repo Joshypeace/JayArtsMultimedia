@@ -33,9 +33,9 @@ export default function Contact() {
   }
 
   const contactInfo = [
-    { icon: Mail, label: "Email", value: "info@jayarts.com", href: "mailto:info@jayarts.com" },
-    { icon: Phone, label: "Phone", value: "(555) 123-4567", href: "tel:+15551234567" },
-    { icon: MapPin, label: "Location", value: "Los Angeles, CA 90001", href: "#" },
+    { icon: Mail, label: "Email", value: "joelchilapondwa@gmail.com", href: "mailto:joelchilapondwa@gmail.com" },
+    { icon: Phone, label: "Phone", value: "(+265) 884-849-879", href: "tel:+265884849879" },
+    { icon: MapPin, label: "Location", value: "Lilongwe, Malawi", href: "#" },
   ]
 
   return (
@@ -207,12 +207,14 @@ export default function Contact() {
               </div>
 
               {/* Map Placeholder */}
-              <div className="glass-effect border border-border rounded-xl overflow-hidden h-64 bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="w-12 h-12 text-primary mx-auto mb-2" />
-                  <p className="text-foreground/60">Los Angeles, CA</p>
-                </div>
-              </div>
+              <div className="glass-effect border border-border rounded-xl overflow-hidden h-64 bg-gradient-to-br from-primary/10 to-transparent">
+                   <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d247812.0774011914!2d33.62774924699226!3d-13.954812235920192!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1921d31ffc299805%3A0x4b7eb9f20a03ff9!2sLilongwe!5e0!3m2!1sen!2smw!4v1768295567936!5m2!1sen!2smw" 
+                   width="600" height="450"
+                    style={{ border: "0" }} allowFullScreen
+                     loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"></iframe>
+                  </div>
+
             </motion.div>
           </div>
         </section>
