@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Mail, Phone, MapPin, Instagram, Facebook, Linkedin } from "lucide-react"
+import { Mail, Phone, MapPin,  } from "lucide-react"
+import { siFacebook, siInstagram, } from "simple-icons"
 import { motion } from "framer-motion"
 
 export default function Footer() {
@@ -24,9 +25,8 @@ export default function Footer() {
   }
 
   const socialLinks = [
-    { icon: Instagram, label: "Instagram" },
-    { icon: Facebook, label: "Facebook" },
-    { icon: Linkedin, label: "LinkedIn" },
+    { icon: siInstagram, label: "Instagram", link: "https://www.instagram.com/jay_arts_multimedia?igsh=MWZ5YTl4Mjh3ZG9ndA%3D%3D&utm_source=qr" },
+    { icon: siFacebook, label: "Facebook", link: "https://www.facebook.com/share/14Sc9c7Ddb2/?mibextid=wwXIfr" },
   ]
 
   return (
@@ -79,8 +79,8 @@ export default function Footer() {
             <ul className="space-y-3">
               {[
                 { icon: Mail, text: "info@jayarts.com" },
-                { icon: Phone, text: "(555) 123-4567" },
-                { icon: MapPin, text: "Los Angeles, CA" },
+                { icon: Phone, text: "(+265) 884-849-879" },
+                { icon: MapPin, text: "Lilongwe, Malawi" },
               ].map((item, idx) => {
                 const Icon = item.icon
                 return (
@@ -102,17 +102,16 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Follow Us</h3>
             <div className="flex gap-3">
               {socialLinks.map((link, idx) => {
-                const Icon = link.icon
                 return (
                   <motion.a
                     key={idx}
-                    href="#"
+                    href={link.link}
                     className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition-colors"
                     whileHover={{ scale: 1.1, rotate: 10 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
-                    <Icon size={18} className="text-primary" />
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-primary" dangerouslySetInnerHTML={{ __html: link.icon.svg }} />
                   </motion.a>
                 )
               })}
