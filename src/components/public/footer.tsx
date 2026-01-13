@@ -78,7 +78,7 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Contact</h3>
             <ul className="space-y-3">
               {[
-                { icon: Mail, text: "info@jayarts.com" },
+                { icon: Mail, text: "joelchilapondwa@gmail.com" },
                 { icon: Phone, text: "(+265) 884-849-879" },
                 { icon: MapPin, text: "Lilongwe, Malawi" },
               ].map((item, idx) => {
