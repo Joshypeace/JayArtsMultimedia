@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Plus, Edit2, Trash2, Eye, EyeOff, Upload } from "lucide-react"
+import { Plus, Trash2, Eye, EyeOff, Upload } from "lucide-react"
 import { CldImage } from 'next-cloudinary'
 
 interface PortfolioItem {
@@ -431,7 +431,7 @@ export default function ManagePortfolio() {
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex gap-2">
-                      <button 
+                      {/* <button 
                         className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
                         onClick={() => window.open(`/portfolio/${item.slug}`, '_blank')}
                       >
@@ -439,7 +439,7 @@ export default function ManagePortfolio() {
                       </button>
                       <button className="p-2 hover:bg-primary/10 rounded-lg transition-colors">
                         <Edit2 size={18} className="text-foreground/60" />
-                      </button>
+                      </button> */}
                       <button 
                         className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
                         onClick={() => handleDelete(item.id)}
