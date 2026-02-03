@@ -1,22 +1,28 @@
+// app/api/portfolio/[slug]/route.ts
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+// Define params type for Next.js 14
+export const dynamic = 'force-dynamic'
+
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await context.params
+    const params = await context.params
+    const slug = params.slug
     
-    // First, increment the view count
-    await prisma.portfolioItem.update({
-      where: { slug },
-      data: {
-        views: { increment: 1 }
-      }
-    })
+    console.log("API Route - Fetching portfolio item with slug:", slug)
     
-    // Then fetch the item
+    if (!slug) {
+      return NextResponse.json(
+        { error: "Slug is required" },
+        { status: 400 }
+      )
+    }
+    
+    // Find the portfolio item
     const portfolioItem = await prisma.portfolioItem.findUnique({
       where: { slug },
       include: {
@@ -34,6 +40,14 @@ export async function GET(
         { status: 404 }
       )
     }
+    
+    // Increment view count
+    await prisma.portfolioItem.update({
+      where: { slug },
+      data: {
+        views: { increment: 1 }
+      }
+    })
     
     return NextResponse.json(portfolioItem)
   } catch (error) {
