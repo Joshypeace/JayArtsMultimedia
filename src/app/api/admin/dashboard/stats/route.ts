@@ -8,7 +8,7 @@ export async function GET() {
       where: { publishedAt: { not: null } }
     })
     const blogPosts = await prisma.blogPost.count({
-      where: { published: true, publishedAt: { not: null } }
+      where: { isPublished: true, publishedAt: { not: null } }
     })
     const inquiries = await prisma.inquiry.count({
       where: { status: "NEW" }
