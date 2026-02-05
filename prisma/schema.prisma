@@ -55,6 +55,7 @@ model User {
   
   // Relations
   blogPosts     BlogPost[]
+  comments      Comment[]
   portfolioItems PortfolioItem[]
   services      Service[]
   bookings      Booking[]
@@ -116,40 +117,54 @@ model PortfolioItem {
 
 // Blog posts
 model BlogPost {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   title       String
-  slug        String   @unique
-  excerpt     String?
-  content     String   // Full blog content
-  coverImage  String?
-  
-  // SEO
+  slug        String         @unique
+  excerpt     String
+  content     String         @db.Text
+  coverImage  String
+  authorId    String
+  category    String
+  readTime    Int            @default(5) // in minutes
+  publishedAt DateTime?
+  isPublished Boolean        @default(false)
+  isFeatured  Boolean        @default(false)
+  tags        String[]
+  views       Int            @default(0)
+  likes       Int            @default(0)
+  shares      Int            @default(0)
   metaTitle   String?
   metaDescription String?
-  keywords    String[]
-  
-  // Publishing
-  published   Boolean  @default(false)
-  featured    Boolean  @default(false)
-  views       Int      @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   
   // Relations
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  
-  // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  publishedAt DateTime?
-  
-  // Indexes
-  @@index([slug])
-  @@index([published])
-  @@index([featured])
-  @@index([publishedAt])
-  @@index([createdAt])
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments Comment[]
 }
 
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  authorName String
+  authorEmail String
+  authorAvatar String?
+  postId    String
+  parentId  String?  // For nested comments
+  authorId  String
+  isApproved Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post     BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent   Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+  
+  @@index([postId])
+  @@index([parentId])
+}
 // Services offered
 model Service {
   id           String         @id @default(cuid())
