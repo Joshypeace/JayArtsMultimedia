@@ -5,10 +5,10 @@ import { motion } from "framer-motion"
 import { Plus, Edit2, Trash2, Eye, EyeOff, Upload, Calendar, Clock, Tag } from "lucide-react"
 import { CldImage } from 'next-cloudinary'
 import dynamic from 'next/dynamic'
-import 'react-quill/dist/quill.snow.css'
+import 'react-quill-new/dist/quill.snow.css'
 
 // Dynamically import ReactQuill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
 
 interface BlogPost {
   id: string
