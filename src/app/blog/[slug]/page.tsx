@@ -29,7 +29,7 @@ interface BlogPost {
 }
 
 interface BlogPostPageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
@@ -68,7 +68,7 @@ async function getRelatedPosts(currentSlug: string): Promise<BlogPost[]> {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const { slug } = params
+  const { slug } = await params
   
   const post = await getBlogPost(slug)
   
@@ -329,7 +329,7 @@ export async function generateStaticParams() {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: BlogPostPageProps) {
-  const post = await getBlogPost(params.slug)
+  const post = await getBlogPost((await params).slug)
   
   if (!post) {
     return {
