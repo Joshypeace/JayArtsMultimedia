@@ -4,6 +4,7 @@ import PublicNavBar from "@/components/public/navbar"
 import Footer from "@/components/public/footer"
 import Link from "next/link"
 import Image from "next/image"
+import { prisma } from "@/lib/prisma"
 
 interface BlogPost {
   id: string
@@ -32,58 +33,83 @@ interface BlogPostPageProps {
   params: Promise<{ slug: string }>
 }
 
+
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL
-    const response = await fetch(`${baseUrl}/api/blog/${slug}`, {
-      next: { revalidate: 60 } // Revalidate every 60 seconds
-    })
-    
-    if (!response.ok) {
-      return null
-    }
-    
-    return await response.json()
-  } catch (error) {
-    console.error("Error fetching blog post:", error)
-    return null
-  }
+  const post = await prisma.blogPost.findUnique({
+    where: { slug },
+    include: {
+      author: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  })
+
+  if (!post) return null
+
+  // Convert Prisma JSON fields safely
+  return {
+    ...post,
+    author: post.author,
+    tags: (post.tags as string[]) ?? [],
+    publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+  } as BlogPost
 }
 
 async function getRelatedPosts(currentSlug: string): Promise<BlogPost[]> {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL
-    const response = await fetch(`${baseUrl}/api/blog?limit=3`)
-    
-    if (!response.ok) {
-      return []
-    }
-    
-    const data = await response.json()
-    return data.posts.filter((post: BlogPost) => post.slug !== currentSlug).slice(0, 3)
-  } catch (error) {
-    console.error("Error fetching related posts:", error)
-    return []
-  }
+  const posts = await prisma.blogPost.findMany({
+    where: {
+      slug: { not: currentSlug },
+    },
+    orderBy: { publishedAt: "desc" },
+    take: 3,
+    include: {
+      author: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  })
+
+  return posts.map((post) => ({
+    ...post,
+    author: post.author,
+    tags: (post.tags as string[]) ?? [],
+    publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+  })) as BlogPost[]
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params
-  
+
+  if (!slug) notFound()
+
   const post = await getBlogPost(slug)
-  
+
   if (!post) {
     notFound()
   }
-  
+
+  // Optional: increment views safely (won’t crash if missing)
+  await prisma.blogPost.updateMany({
+    where: { slug },
+    data: { views: { increment: 1 } },
+  })
+
   const relatedPosts = await getRelatedPosts(slug)
-  
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Not published"
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     })
   }
 
@@ -110,15 +136,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
                 {post.category}
               </span>
+
               {post.isFeatured && (
                 <span className="px-3 py-1 bg-yellow-500/10 text-yellow-500 rounded-full text-sm font-medium">
                   Featured
                 </span>
               )}
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl font-bold mb-6">{post.title}</h1>
-            
+
             <div className="flex flex-wrap items-center gap-6 text-foreground/60 mb-8">
               <div className="flex items-center gap-2">
                 {post.author.avatar ? (
@@ -134,6 +161,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     <User size={16} className="text-primary" />
                   </div>
                 )}
+
                 <div>
                   <p className="font-medium text-foreground">{post.author.name}</p>
                   {post.author.bio && (
@@ -141,18 +169,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   )}
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
                   <span>{formatDate(post.publishedAt)}</span>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Clock size={16} />
                   <span>{post.readTime} min read</span>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Eye size={16} />
                   <span>{post.views.toLocaleString()} views</span>
@@ -180,7 +208,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           )}
 
           {/* Content */}
-          <div 
+          <div
             className="prose prose-lg dark:prose-invert max-w-none mb-8"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
@@ -211,9 +239,28 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <p className="text-foreground/60 text-sm mb-2">Share this article</p>
               <div className="flex gap-3">
                 {[
-                  { name: 'Twitter', url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://yourdomain.com/blog/${post.slug}`)}` },
-                  { name: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://yourdomain.com/blog/${post.slug}`)}` },
-                  { name: 'LinkedIn', url: `https://www.linkedin.com/shareArticle?mini=true&title=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://yourdomain.com/blog/${post.slug}`)}` }
+                  {
+                    name: "Twitter",
+                    url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                      post.title
+                    )}&url=${encodeURIComponent(
+                      `https://yourdomain.com/blog/${post.slug}`
+                    )}`,
+                  },
+                  {
+                    name: "Facebook",
+                    url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                      `https://yourdomain.com/blog/${post.slug}`
+                    )}`,
+                  },
+                  {
+                    name: "LinkedIn",
+                    url: `https://www.linkedin.com/shareArticle?mini=true&title=${encodeURIComponent(
+                      post.title
+                    )}&url=${encodeURIComponent(
+                      `https://yourdomain.com/blog/${post.slug}`
+                    )}`,
+                  },
                 ].map((social) => (
                   <a
                     key={social.name}
@@ -227,7 +274,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 ))}
               </div>
             </div>
-            
+
             <div className="text-sm text-foreground/60">
               <p>Last updated: {formatDate(post.updatedAt)}</p>
             </div>
@@ -290,7 +337,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     <p className="text-foreground/70">{post.author.bio}</p>
                   ) : (
                     <p className="text-foreground/70">
-                      {post.author.name} is a contributor to the JayArts blog, sharing insights and expertise in {post.category.toLowerCase()}.
+                      {post.author.name} is a contributor to the JayArts blog, sharing insights and expertise in{" "}
+                      {post.category.toLowerCase()}.
                     </p>
                   )}
                 </div>
@@ -305,39 +353,35 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   )
 }
 
-// Generate static params for better performance
+/**
+ * ✅ This will work on Vercel build because it uses Prisma,
+ * not localhost fetch.
+ */
 export async function generateStaticParams() {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL
-    const response = await fetch(`${baseUrl}/api/blog`)
-    
-    if (!response.ok) {
-      return []
-    }
-    
-    const data = await response.json()
-    const posts = data.posts || []
-    
-    return posts.map((post: BlogPost) => ({
-      slug: post.slug,
-    }))
-  } catch (error) {
-    console.error("Error generating static params:", error)
-    return []
-  }
+  const posts = await prisma.blogPost.findMany({
+    select: { slug: true },
+    where: {
+  //// remove if you don't have status
+      isPublished: true,
+    },
+  })
+
+  return posts.map((post) => ({
+    slug: post.slug,
+  }))
 }
 
-// Generate metadata for SEO
 export async function generateMetadata({ params }: BlogPostPageProps) {
-  const post = await getBlogPost((await params).slug)
-  
+  const { slug } = await params
+  const post = await getBlogPost(slug)
+
   if (!post) {
     return {
-      title: 'Post Not Found',
-      description: 'The blog post you are looking for does not exist.'
+      title: "Post Not Found",
+      description: "The blog post you are looking for does not exist.",
     }
   }
-  
+
   return {
     title: post.title,
     description: post.excerpt,
@@ -345,16 +389,16 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
       title: post.title,
       description: post.excerpt,
       images: [post.coverImage],
-      type: 'article',
+      type: "article",
       publishedTime: post.publishedAt || post.createdAt,
       authors: [post.author.name],
       tags: post.tags,
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: post.title,
       description: post.excerpt,
       images: [post.coverImage],
-    }
+    },
   }
 }
