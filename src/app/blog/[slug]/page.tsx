@@ -34,7 +34,7 @@ interface BlogPostPageProps {
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+    const baseUrl = process.env.NEXTAUTH_URL
     const response = await fetch(`${baseUrl}/api/blog/${slug}`, {
       next: { revalidate: 60 } // Revalidate every 60 seconds
     })
@@ -52,7 +52,7 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
 
 async function getRelatedPosts(currentSlug: string): Promise<BlogPost[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+    const baseUrl = process.env.NEXTAUTH_URL
     const response = await fetch(`${baseUrl}/api/blog?limit=3`)
     
     if (!response.ok) {
@@ -308,7 +308,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 // Generate static params for better performance
 export async function generateStaticParams() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+    const baseUrl = process.env.NEXTAUTH_URL
     const response = await fetch(`${baseUrl}/api/blog`)
     
     if (!response.ok) {
