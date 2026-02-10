@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Check } from "lucide-react"
 import PublicNavBar from "@/components/public/navbar"
 import Footer from "@/components/public/footer"
+import Link from "next/link"
 
 const services = [
   {
@@ -256,21 +257,56 @@ export default function Services() {
                             </li>
                           ))}
                         </ul>
-                        <button
-                          className={`w-full py-2 sm:py-3 rounded-lg font-medium transition-all relative z-10 text-sm sm:text-base ${
+                        <Link
+                          href={`/booking?service=${service.title}&package=${pkg.name}`}
+                          className={`w-full py-2 sm:py-3 rounded-lg font-medium transition-all relative z-10 text-sm sm:text-base flex items-center justify-center ${
                             pkg.isPopular
                               ? "bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:shadow-lg hover:shadow-primary/40"
                               : "bg-primary/20 text-primary hover:bg-primary/30"
                           }`}
                         >
                           Get Started
-                        </button>
+                        </Link>
                       </motion.div>
                     ))}
                   </div>
                 </div>
               </motion.div>
             ))}
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 sm:py-20 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/5 border border-primary/20 rounded-2xl p-8 sm:p-12"
+            >
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+                Ready to Start Your Project?
+              </h2>
+              <p className="text-foreground/70 mb-8 max-w-2xl mx-auto">
+                Contact us for custom quotes or to discuss your specific requirements. We&apos;re here to bring your vision to life.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/booking"
+                  className="px-6 sm:px-8 py-3 bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-lg font-medium hover:shadow-lg hover:shadow-primary/40 transition-all"
+                >
+                  Book Now
+                </Link>
+                <Link
+                  href="/contact"
+                  className="px-6 sm:px-8 py-3 border-2 border-primary text-primary rounded-lg font-medium hover:bg-primary/10 transition-all"
+                >
+                  Contact Us
+                </Link>
+              </div>
+            </motion.div>
           </div>
         </section>
       </main>
