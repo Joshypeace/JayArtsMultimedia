@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -13,7 +14,6 @@ import {
   Settings, 
   Users, 
   Camera,
-  Palette,
   Home,
   User,
   ChevronLeft,
@@ -29,7 +29,6 @@ const navItems = [
   { label: "Dashboard", href: "/admin", icon: BarChart3, exact: true },
   { label: "Portfolio", href: "/admin/portfolio", icon: Camera, exact: false },
   { label: "Blog", href: "/admin/blog", icon: BookOpen, exact: false },
-  { label: "Services", href: "/admin/services", icon: Palette, exact: false },
   { label: "Bookings", href: "/admin/bookings", icon: Calendar, exact: false },
   { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquare, exact: false },
   { label: "Users", href: "/admin/users", icon: Users, exact: false },
@@ -87,14 +86,15 @@ const SidebarContent = ({
       <div className={`flex items-center gap-3 p-3 rounded-lg bg-primary/5 mb-6 ${isCollapsed ? "justify-center" : ""}`}>
         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
           {currentUser.image ? (
-            <img 
-              src={currentUser.image} 
-              alt={currentUser.name || "User"} 
-              className="w-full h-full rounded-full object-cover"
-            />
-          ) : (
-            <User size={16} className="text-primary" />
-          )}
+              <Image 
+                src={currentUser.image} 
+                alt={currentUser.name || "User"}
+                fill
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <User size={16} className="text-primary" />
+            )}
         </div>
         {!isCollapsed && (
           <div className="min-w-0">
