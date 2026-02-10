@@ -13,7 +13,7 @@ export async function GET(
     const { slug } = await params
     
     // Increment view count
-    await prisma.blogPost.update({
+    await prisma.blogPost.updateMany({
       where: { slug, isPublished: true },
       data: {
         views: { increment: 1 }
