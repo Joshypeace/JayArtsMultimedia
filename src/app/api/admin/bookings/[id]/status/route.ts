@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
 interface RouteParams {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function PATCH(
@@ -21,7 +21,7 @@ export async function PATCH(
       )
     }
 
-    const { id } = params
+    const { id } = await params
     const { status, note } = await request.json()
     
     // Get existing booking
