@@ -1,285 +1,217 @@
 "use client"
 
-import type React from "react"
+import { useState, useEffect, useCallback } from "react"
+import { Calendar, Eye, Filter } from "lucide-react"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import PublicNavBar from "@/components/public/navbar"
-import Footer from "@/components/public/footer"
+interface Booking {
+  id: string
+  eventType: string
+  eventDate: string
+  clientName: string
+  clientEmail: string
+  clientPhone: string | null
+  status: string
+  createdAt: string
+}
 
-const eventTypes = ["Photography", "Videography", "Design Consultation", "Multi-Service Package"]
+interface Stats {
+  total: number
+  todayBookings: number
+  counts: Record<string, number>
+  upcomingEvents: number
+}
 
-export default function Booking() {
-  const [formData, setFormData] = useState({
-    eventType: "",
-    date: "",
-    time: "",
-    venue: "",
-    contactName: "",
-    contactEmail: "",
-    contactPhone: "",
-    budgetRange: "",
-    additionalNotes: "",
-  })
+const statusColors: Record<string, string> = {
+  PENDING: "bg-yellow-500/10 text-yellow-500",
+  CONFIRMED: "bg-blue-500/10 text-blue-500",
+  IN_PROGRESS: "bg-purple-500/10 text-purple-500",
+  COMPLETED: "bg-green-500/10 text-green-500",
+  CANCELLED: "bg-red-500/10 text-red-500",
+  RESCHEDULED: "bg-orange-500/10 text-orange-500"
+}
 
-  const [submitted, setSubmitted] = useState(false)
-  const [, setFocusedField] = useState<string | null>(null)
+export default function ManageBookings() {
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedStatus, setSelectedStatus] = useState("ALL")
+  const [stats, setStats] = useState<Stats | null>(null)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+  const fetchBookings = useCallback(async () => {
+    try {
+      const params = new URLSearchParams()
+      if (selectedStatus !== "ALL") params.append('status', selectedStatus)
+      
+      const response = await fetch(`/api/admin/bookings?${params}`)
+      const data = await response.json()
+      setBookings(data.bookings)
+    } catch (error) {
+      console.error("Failed to fetch bookings:", error)
+    } finally {
+      setLoading(false)
+    }
+  }, [selectedStatus])
+
+  useEffect(() => {
+    fetchBookings()
+    fetchStats()
+  }, [fetchBookings, selectedStatus])
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/admin/bookings/stats')
+      const data = await response.json()
+      setStats(data)
+    } catch (error) {
+      console.error("Failed to fetch stats:", error)
+    }
+  }
+
+  const updateStatus = async (id: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/admin/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+      
+      if (response.ok) {
+        fetchBookings()
+        fetchStats()
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error)
+    }
+  }
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 3000)
-  }
-
-  const formSections = [
-    {
-      title: "Event Details",
-      fields: ["eventType", "date", "time", "venue", "budgetRange"],
-    },
-    {
-      title: "Contact Information",
-      fields: ["contactName", "contactEmail", "contactPhone"],
-    },
-    {
-      title: "Additional Information",
-      fields: ["additionalNotes"],
-    },
-  ]
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  if (loading) {
+    return (
+      <div className="p-8 flex justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <PublicNavBar />
+    <div className="p-8 space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold mb-2">Booking Management</h1>
+        <p className="text-foreground/60">View and manage client bookings</p>
+      </div>
 
-      <main className="pt-20">
-        {/* Hero Section */}
-        <section className="py-20 px-4 relative overflow-hidden">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-5xl md:text-6xl font-bold mb-6"
-            >
-              Book Your <span className="text-primary">Session</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-              className="text-xl text-foreground/70"
-            >
-              Let&apos;s create something amazing together
-            </motion.p>
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid md:grid-cols-4 gap-4">
+          <div className="bg-card border border-border rounded-xl p-6">
+            <p className="text-sm text-foreground/60">Total Bookings</p>
+            <p className="text-3xl font-bold mt-2">{stats.total}</p>
           </div>
-        </section>
-
-        {/* Booking Form */}
-        <section className="py-20 px-4 relative overflow-hidden">
-          <div className="max-w-2xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="glass-effect border border-border rounded-2xl p-8 md:p-12"
-            >
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
-                  {formSections.map((section, ) => (
-                    <motion.div key={section.title} variants={itemVariants} className="space-y-4">
-                      <h3 className="text-lg font-semibold text-primary border-b border-border pb-3">
-                        {section.title}
-                      </h3>
-
-                      {section.title === "Event Details" && (
-                        <>
-                          <div>
-                            <label className="block text-sm font-semibold mb-3 text-foreground">Event Type *</label>
-                            <select
-                              name="eventType"
-                              value={formData.eventType}
-                              onChange={handleChange}
-                              onFocus={() => setFocusedField("eventType")}
-                              onBlur={() => setFocusedField(null)}
-                              required
-                              className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                            >
-                              <option value="">Select an event type</option>
-                              {eventTypes.map((type) => (
-                                <option key={type} value={type}>
-                                  {type}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-semibold mb-3 text-foreground">Date *</label>
-                              <input
-                                type="date"
-                                name="date"
-                                value={formData.date}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary transition-colors"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold mb-3 text-foreground">Time *</label>
-                              <input
-                                type="time"
-                                name="time"
-                                value={formData.time}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary transition-colors"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-semibold mb-3 text-foreground">Venue/Location *</label>
-                            <input
-                              type="text"
-                              name="venue"
-                              placeholder="Where will the event take place?"
-                              value={formData.venue}
-                              onChange={handleChange}
-                              required
-                              className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-semibold mb-3 text-foreground">Budget Range *</label>
-                            <select
-                              name="budgetRange"
-                              value={formData.budgetRange}
-                              onChange={handleChange}
-                              required
-                              className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary transition-colors"
-                            >
-                              <option value="">Select budget range</option>
-                              <option value="under-1000">Under $1,000</option>
-                              <option value="1000-2500">$1,000 - $2,500</option>
-                              <option value="2500-5000">$2,500 - $5,000</option>
-                              <option value="5000-10000">$5,000 - $10,000</option>
-                              <option value="10000+">$10,000+</option>
-                            </select>
-                          </div>
-                        </>
-                      )}
-
-                      {section.title === "Contact Information" && (
-                        <>
-                          <div>
-                            <label className="block text-sm font-semibold mb-3 text-foreground">Full Name *</label>
-                            <input
-                              type="text"
-                              name="contactName"
-                              placeholder="Your full name"
-                              value={formData.contactName}
-                              onChange={handleChange}
-                              required
-                              className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                            />
-                          </div>
-
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-semibold mb-3 text-foreground">Email *</label>
-                              <input
-                                type="email"
-                                name="contactEmail"
-                                placeholder="your@email.com"
-                                value={formData.contactEmail}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold mb-3 text-foreground">Phone *</label>
-                              <input
-                                type="tel"
-                                name="contactPhone"
-                                placeholder="(555) 123-4567"
-                                value={formData.contactPhone}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder-foreground/40 focus:outline-none focus:border-primary transition-colors"
-                              />
-                            </div>
-                          </div>
-                        </>
-                      )}
-
-                      {section.title === "Additional Information" && (
-                        <div>
-                          <label className="block text-sm font-semibold mb-3 text-foreground">Additional Notes</label>
-                          <textarea
-                            name="additionalNotes"
-                            placeholder="Tell us more about your project, vision, or any special requests..."
-                            value={formData.additionalNotes}
-                            onChange={handleChange}
-                            rows={5}
-                            className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder-foreground/40 focus:outline-none focus:border-primary transition-colors resize-none"
-                          />
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-                </motion.div>
-
-                {/* Submit Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  className="w-full py-3 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90 transition-all font-semibold text-lg"
-                >
-                  {submitted ? "Booking Request Received!" : "Send Booking Request"}
-                </motion.button>
-
-                {submitted && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-center"
-                  >
-                    Thank you! We&apos;ll get back to you within 24 hours.
-                  </motion.div>
-                )}
-              </form>
-            </motion.div>
+          <div className="bg-card border border-border rounded-xl p-6">
+            <p className="text-sm text-foreground/60">Today</p>
+            <p className="text-3xl font-bold mt-2">{stats.todayBookings}</p>
           </div>
-        </section>
-      </main>
+          <div className="bg-card border border-border rounded-xl p-6">
+            <p className="text-sm text-foreground/60">Pending</p>
+            <p className="text-3xl font-bold mt-2 text-yellow-500">{stats.counts.PENDING}</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-6">
+            <p className="text-sm text-foreground/60">Upcoming Events</p>
+            <p className="text-3xl font-bold mt-2">{stats.upcomingEvents}</p>
+          </div>
+        </div>
+      )}
 
-      <Footer />
+      {/* Filter */}
+      <div className="bg-card border border-border rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Filter size={18} className="text-foreground/60" />
+          <span className="font-medium">Filter by Status</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {["ALL", "PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"].map((status) => (
+            <button
+              key={status}
+              onClick={() => setSelectedStatus(status)}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                selectedStatus === status
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border hover:border-primary"
+              }`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Bookings Table */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border bg-background/50">
+                <th className="text-left py-4 px-6">Client</th>
+                <th className="text-left py-4 px-6">Service</th>
+                <th className="text-left py-4 px-6">Event Date</th>
+                <th className="text-left py-4 px-6">Status</th>
+                <th className="text-left py-4 px-6">Booked On</th>
+                <th className="text-left py-4 px-6">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((booking) => (
+                <tr key={booking.id} className="border-b border-border/50 hover:bg-primary/5">
+                  <td className="py-4 px-6">
+                    <div className="font-medium">{booking.clientName}</div>
+                    <div className="text-sm text-foreground/60">{booking.clientEmail}</div>
+                  </td>
+                  <td className="py-4 px-6">{booking.eventType}</td>
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-1">
+                      <Calendar size={14} />
+                      {formatDate(booking.eventDate)}
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <select
+                      value={booking.status}
+                      onChange={(e) => updateStatus(booking.id, e.target.value)}
+                      className={`px-3 py-1 text-xs font-semibold rounded-full border-0 ${statusColors[booking.status]}`}
+                    >
+                      <option value="PENDING">Pending</option>
+                      <option value="CONFIRMED">Confirmed</option>
+                      <option value="IN_PROGRESS">In Progress</option>
+                      <option value="COMPLETED">Completed</option>
+                      <option value="CANCELLED">Cancelled</option>
+                    </select>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-foreground/60">
+                    {formatDate(booking.createdAt)}
+                  </td>
+                  <td className="py-4 px-6">
+                    <button className="p-2 hover:bg-primary/10 rounded-lg">
+                      <Eye size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        {bookings.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-foreground/60">No bookings found</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
