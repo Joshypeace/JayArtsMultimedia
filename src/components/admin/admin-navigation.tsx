@@ -9,7 +9,8 @@ import {
   LogOut, 
   BarChart3, 
   BookOpen, 
-  Calendar,  
+  Calendar, 
+  MessageSquare, 
   Settings, 
   Users, 
   Camera,
@@ -29,6 +30,7 @@ const navItems = [
   { label: "Portfolio", href: "/admin/portfolio", icon: Camera, exact: false },
   { label: "Blog", href: "/admin/blog", icon: BookOpen, exact: false },
   { label: "Bookings", href: "/admin/bookings", icon: Calendar, exact: false },
+  { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquare, exact: false },
   { label: "Users", href: "/admin/users", icon: Users, exact: false },
   { label: "Settings", href: "/admin/settings", icon: Settings, exact: false },
 ]
