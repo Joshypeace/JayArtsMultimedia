@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
 interface RouteParams {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 // GET single booking
@@ -22,7 +22,7 @@ export async function GET(
       )
     }
 
-    const { id } = params
+    const { id } = await params
     
     const booking = await prisma.booking.findUnique({
       where: { id },
@@ -68,7 +68,7 @@ export async function PATCH(
       )
     }
 
-    const { id } = params
+    const { id } = await params
     const data = await request.json()
     
     const booking = await prisma.booking.update({
@@ -112,7 +112,7 @@ export async function DELETE(
       )
     }
 
-    const { id } = params
+    const { id } = await params
     
     await prisma.booking.delete({
       where: { id }
