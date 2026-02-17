@@ -10,7 +10,7 @@ interface RouteParams {
 // GET single booking
 export async function GET(
   request: Request,
-  { params }: RouteParams
+  context: { params: RouteParams['params'] }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -22,7 +22,7 @@ export async function GET(
       )
     }
 
-    const { id } = await params
+    const { id } = await context.params
     
     const booking = await prisma.booking.findUnique({
       where: { id },

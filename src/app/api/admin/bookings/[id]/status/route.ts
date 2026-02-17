@@ -9,7 +9,7 @@ interface RouteParams {
 
 export async function PATCH(
   request: Request,
-  { params }: RouteParams
+  context: { params: RouteParams['params'] }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -21,7 +21,7 @@ export async function PATCH(
       )
     }
 
-    const { id } = await params
+    const { id } = await context.params
     const { status, note } = await request.json()
     
     // Get existing booking
