@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-
+import { BookingWhereInput } from "@/generated/prisma/models"
 // Define the booking status enum to match your Prisma schema
 const BookingStatus = {
   PENDING: 'PENDING',
@@ -83,12 +83,12 @@ export async function GET(request: Request) {
     }
 
     // 4. Build where clause using raw object (no imports needed)
-    const where: any = {}
+    const where: BookingWhereInput = {}
 
     // Status filter
     if (status && status !== 'ALL') {
-      where.status = status
-    }
+      where.status = status as BookingStatusType
+    } 
 
     // Date range filter
     if (fromDate || toDate) {
@@ -160,7 +160,7 @@ export async function GET(request: Request) {
     const hasPrevPage = page > 1
 
     // 8. Format the response data
-    const formattedBookings = bookings.map((booking): BookingResponse => ({
+    const formattedBookings: BookingResponse[] = bookings.map((booking: typeof bookings[0]): BookingResponse => ({
       id: booking.id,
       eventType: booking.eventType,
       eventDate: booking.eventDate,
@@ -175,8 +175,8 @@ export async function GET(request: Request) {
       status: booking.status as BookingStatusType,
       createdAt: booking.createdAt,
       service: booking.service ? {
-        name: booking.service.name,
-        category: booking.service.category
+      name: booking.service.name,
+      category: booking.service.category
       } : null
     }))
 
@@ -255,9 +255,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       { 
         success: false,
-        error: process.env.NODE_ENV === 'development' 
-          ? error instanceof Error ? error.message : 'Failed to fetch bookings'
-          : "An unexpected error occurred. Please try again."
+        error: "An unexpected error occurred. Please try again."
       },
       { status: 500 }
     )
