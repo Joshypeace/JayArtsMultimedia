@@ -15,7 +15,7 @@
     "@hookform/resolvers": "^3.10.0",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/client": "^7.4.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
     "@radix-ui/react-aspect-ratio": "1.1.1",
@@ -90,7 +90,7 @@
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.0.8",
     "postcss": "^8.5",
-    "prisma": "^7.1.0",
+    "prisma": "^7.4.0",
     "tailwindcss": "^4.1.9",
     "typescript": "^5.9.3"
   },
