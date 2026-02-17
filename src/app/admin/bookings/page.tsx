@@ -62,7 +62,7 @@ export default function ManageBookings() {
       const response = await fetch(`/api/admin/bookings?${params}`)
       if (!response.ok) throw new Error("Failed to fetch bookings")
       const data = await response.json()
-      setBookings(data.bookings)
+      setBookings(data.data.bookings)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load bookings")
     } finally {
@@ -177,7 +177,7 @@ export default function ManageBookings() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold mb-2">Booking Management</h1>
-            <p className="text-foreground/60">Manage client bookings and appointments ({bookings.length} bookings)</p>
+            <p className="text-foreground/60">Manage client bookings and appointments ({bookings?.length ?? 0} bookings)</p>
           </div>
           <div className="flex gap-3">
             <button
