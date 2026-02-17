@@ -43,7 +43,7 @@ export default function ManageBookings() {
       
       const response = await fetch(`/api/admin/bookings?${params}`)
       const data = await response.json()
-      setBookings(data.bookings)
+      setBookings(data.data.bookings)
     } catch (error) {
       console.error("Failed to fetch bookings:", error)
     } finally {
