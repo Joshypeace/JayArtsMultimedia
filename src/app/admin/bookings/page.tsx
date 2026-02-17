@@ -425,9 +425,8 @@ export default function ManageBookings() {
 
                 {/* Budget */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-primary">Budget</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-primary">Budget (MWK)</h3>
                   <div className="flex items-center gap-2">
-                    <DollarSign size={20} className="text-primary" />
                     <span className="text-2xl font-bold text-primary">
                       {selectedBooking.budget 
                         ? `MWK ${selectedBooking.budget.toLocaleString()}`
