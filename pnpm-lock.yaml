@@ -143,6 +143,9 @@ importers:
       framer-motion:
         specifier: ^12.34.0
         version: 12.34.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.0(react@19.2.4))(react@19.2.4)
+      geist:
+        specifier: ^1.7.0
+        version: 1.7.0(next@16.0.7(@babel/core@7.29.0)(react-dom@19.2.0(react@19.2.4))(react@19.2.4))
       input-otp:
         specifier: 1.4.1
         version: 1.4.1(react-dom@19.2.0(react@19.2.4))(react@19.2.4)
@@ -2443,6 +2446,11 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
+
+  geist@1.7.0:
+    resolution: {integrity: sha512-ZaoiZwkSf0DwwB1ncdLKp+ggAldqxl5L1+SXaNIBGkPAqcu+xjVJLxlf3/S8vLt9UHx1xu5fz3lbzKCj5iOVdQ==}
+    peerDependencies:
+      next: '>=13.2.0'
 
   generate-function@2.3.1:
     resolution: {integrity: sha512-eeB5GfMNeevm/GRYq20ShmsaGcmI81kIX2K9XQx5miC8KdHaC6Jm0qQ8ZNeGOi7wYB8OsdxKs+Y2oVuTFuVwKQ==}
@@ -6102,6 +6110,10 @@ snapshots:
       is-callable: 1.2.7
 
   functions-have-names@1.2.3: {}
+
+  geist@1.7.0(next@16.0.7(@babel/core@7.29.0)(react-dom@19.2.0(react@19.2.4))(react@19.2.4)):
+    dependencies:
+      next: 16.0.7(@babel/core@7.29.0)(react-dom@19.2.0(react@19.2.4))(react@19.2.4)
 
   generate-function@2.3.1:
     dependencies:
