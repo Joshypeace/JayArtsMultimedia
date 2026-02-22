@@ -7,7 +7,7 @@ import Image from "next/image"
 const portfolioItems = [
   { id: 1, title: "Premium Brand Campaign", category: "Photography", image: "/luxury-brand-photography.jpg" },
   { id: 2, title: "Corporate Video Production", category: "Videography", image: "/corporate-video-production.png" },
-  { id: 3, title: "Identity System Design", category: "Design", image: "/modern-brand-identity.jpg" },
+  { id: 3, title: "Identity Graphic Design", category: "Design", image: "/graphic.jpg" },
 ]
 
 export default function PortfolioPreview() {
