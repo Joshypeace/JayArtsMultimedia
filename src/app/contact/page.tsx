@@ -442,10 +442,10 @@ export default function Contact() {
                 <h3 className="font-semibold mb-4">Follow Us</h3>
                 <div className="flex gap-4">
                   {[
-                    { name: "Instagram", url: "https://instagram.com", icon: "📸" },
-                    { name: "Facebook", url: "https://facebook.com", icon: "👍" },
-                    { name: "LinkedIn", url: "https://linkedin.com", icon: "💼" },
-                    { name: "Twitter", url: "https://twitter.com", icon: "🐦" }
+                    { name: "Instagram", url: "https://www.instagram.com/jay_arts_multimedia?igsh=MWZ5YTl4Mjh3ZG9ndA%3D%3D&utm_source=qr", icon: "📸" },
+                    { name: "Facebook", url: "https://www.facebook.com/share/14Sc9c7Ddb2/?mibextid=wwXIfr", icon: "👍" },
+                    // { name: "LinkedIn", url: "https://linkedin.com", icon: "💼" },
+                    // { name: "Twitter", url: "https://twitter.com", icon: "🐦" }
                   ].map((social) => (
                     <motion.a
                       key={social.name}
