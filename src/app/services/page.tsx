@@ -11,36 +11,6 @@ const services = [
     title: "Photography",
     description: "Professional photography services for brands and events",
     image: "/service-photography.jpg",
-    packages: [
-      {
-        name: "Bronze",
-        price: "MWK 400,000",
-        features: ["1 Photographer", "50+ Edited Photos", "Pictures in flash disk", "Event Coverage"],
-      },
-      {
-        name: "Silver",
-        price: "MWK 650,000",
-        features: [
-          "1 Photographer",
-          "100+ Edited Photos",
-          "Pictures in flash disk",
-          "1 A4 Framed Picture",
-          "100 Hardcopy Pictures",
-        ],
-        isPopular: true,
-      },
-      {
-        name: "Gold",
-        price: "MWK 900,000",
-        features: [
-          "1 Photographer",
-          "Unlimited Photos",
-          "1 A3 Framed Picture",
-          "100 Hardcopy Pictures in Album",
-          "Premium Editing",
-        ],
-      },
-    ],
     deliverables: [
       "High-resolution edited photos",
       "Web-optimized versions",
@@ -48,41 +18,12 @@ const services = [
       "Flash disk delivery",
       "Print releases",
     ],
+    details: "From corporate events and product photography to portraits and special occasions, our photography services capture moments with artistic precision and technical excellence. We use professional-grade equipment and advanced editing techniques to deliver stunning visuals that tell your story.",
   },
   {
     title: "Videography",
     description: "Cinematic video production for commercials, events, and content",
     image: "/service-videography.jpg",
-    packages: [
-      {
-        name: "Bronze",
-        price: "MWK 400,000",
-        features: ["1 Video Camera", "Full Video in Flash Disk", "Video Highlights", "1 Photographer"],
-      },
-      {
-        name: "Silver",
-        price: "MWK 650,000",
-        features: [
-          "2 Video Cameras",
-          "Full Video in Flash Disk",
-          "Video Highlights",
-          "1 Photographer",
-          "1 A4 Framed Picture",
-        ],
-        isPopular: true,
-      },
-      {
-        name: "Gold",
-        price: "MWK 900,000",
-        features: [
-          "3 Video Cameras",
-          "Full Video in Flash Disk",
-          "Video Highlights",
-          "1 A3 Framed Picture",
-          "100 Hardcopy Pictures in Album",
-        ],
-      },
-    ],
     deliverables: [
       "4K video files",
       "Multiple formats",
@@ -91,35 +32,12 @@ const services = [
       "Flash disk delivery",
       "Video highlights",
     ],
+    details: "Bring your vision to life with our cinematic videography services. Whether it's brand commercials, event coverage, music videos, or corporate content, we combine creative storytelling with technical expertise to produce compelling visual narratives that engage and inspire your audience.",
   },
   {
     title: "Graphic Design",
     description: "Custom design solutions for brands, print, and digital",
     image: "/service-design.jpg",
-    packages: [
-      {
-        name: "Bronze",
-        price: "MWK 400,000",
-        features: ["Logo Design", "3 Concepts", "2 Revisions", "Basic Deliverables"],
-      },
-      {
-        name: "Silver",
-        price: "MWK 650,000",
-        features: ["Full Branding Kit", "5+ Concepts", "4 Revisions", "Brand Guidelines", "Extended Support"],
-        isPopular: true,
-      },
-      {
-        name: "Gold",
-        price: "MWK 900,000",
-        features: [
-          "Complete Brand System",
-          "Unlimited Concepts",
-          "Unlimited Revisions",
-          "Print & Digital Assets",
-          "Premium Support",
-        ],
-      },
-    ],
     deliverables: [
       "Logo files (All formats)",
       "Brand guidelines",
@@ -128,6 +46,7 @@ const services = [
       "Social media templates",
       "Print-ready files",
     ],
+    details: "Transform your brand identity with our comprehensive graphic design solutions. From logo design and brand development to marketing materials and digital assets, we create cohesive visual identities that communicate your brand's essence and leave lasting impressions on your target audience.",
   },
 ]
 
@@ -168,7 +87,7 @@ export default function Services() {
           <div className="absolute top-40 left-2 sm:left-5 w-64 sm:w-80 h-64 sm:h-80 bg-primary/10 rounded-full blur-3xl" />
           <div className="absolute bottom-10 sm:bottom-20 right-2 sm:right-5 w-72 sm:w-96 h-72 sm:h-96 bg-primary/10 rounded-full blur-3xl" />
 
-          <div className="max-w-6xl mx-auto space-y-16 sm:space-y-20 relative z-10">
+          <div className="max-w-6xl mx-auto space-y-20 sm:space-y-28 relative z-10">
             {services.map((service, serviceIdx) => (
               <motion.div
                 key={service.title}
@@ -178,32 +97,46 @@ export default function Services() {
                 viewport={{ once: true }}
                 className="relative"
               >
-                <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center mb-12 sm:mb-16">
+                <div className="grid md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-start">
+                  {/* Image placeholder - you can replace with actual images */}
                   <motion.div
-                    initial={{ opacity: 0, x: -50 }}
+                    initial={{ opacity: 0, x: serviceIdx % 2 === 1 ? 50 : -50 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2, duration: 0.8 }}
                     viewport={{ once: true }}
-                    className={serviceIdx % 2 === 1 ? "md:order-2" : ""}
+                    className={`${serviceIdx % 2 === 1 ? "md:order-2" : ""}`}
                   >
-                    <div className="bg-gradient-to-br from-primary/25 to-transparent rounded-xl aspect-video" />
+                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20 aspect-video">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-primary/30 text-2xl font-bold">{service.title}</span>
+                      </div>
+                    </div>
                   </motion.div>
 
+                  {/* Content */}
                   <motion.div
-                    initial={{ opacity: 0, x: 50 }}
+                    initial={{ opacity: 0, x: serviceIdx % 2 === 1 ? -50 : 50 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2, duration: 0.8 }}
                     viewport={{ once: true }}
-                    className={serviceIdx % 2 === 1 ? "md:order-1" : ""}
+                    className={`${serviceIdx % 2 === 1 ? "md:order-1" : ""}`}
                   >
-                    <h2 className="text-3xl sm:text-4xl md:text-4xl font-bold mb-3 sm:mb-4 text-primary">
+                    <h2 className="text-4xl sm:text-4xl md:text-5xl font-bold mb-4 text-primary">
                       {service.title}
                     </h2>
-                    <p className="text-base sm:text-lg text-foreground/70 mb-6 sm:mb-8">{service.description}</p>
+                    <p className="text-lg sm:text-xl text-foreground/80 mb-6 leading-relaxed">
+                      {service.description}
+                    </p>
+                    
+                    {/* Detailed description */}
+                    <p className="text-foreground/70 mb-8 leading-relaxed">
+                      {service.details}
+                    </p>
 
+                    {/* Deliverables */}
                     <div>
-                      <h3 className="text-lg font-semibold text-primary mb-4">Deliverables:</h3>
-                      <ul className="space-y-2 sm:space-y-3">
+                      <h3 className="text-xl font-semibold text-primary mb-4">What You Get:</h3>
+                      <ul className="grid sm:grid-cols-2 gap-3">
                         {service.deliverables.map((item) => (
                           <li key={item} className="flex items-center gap-3">
                             <Check className="w-5 h-5 text-primary flex-shrink-0" />
@@ -212,67 +145,64 @@ export default function Services() {
                         ))}
                       </ul>
                     </div>
-                  </motion.div>
-                </div>
 
-                {/* Packages */}
-                <div>
-                  <h3 className="text-2xl sm:text-2xl font-bold mb-6 sm:mb-8 text-center text-primary">
-                    Service Packages
-                  </h3>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {service.packages.map((pkg, pkgIdx) => (
-                      <motion.div
-                        key={pkg.name}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: pkgIdx * 0.1, duration: 0.6 }}
-                        viewport={{ once: true }}
-                        className={`glass-effect rounded-xl p-4 sm:p-6 transition-all relative overflow-hidden group ${
-                          pkg.isPopular
-                            ? "border-2 border-primary lg:scale-110 shadow-lg shadow-primary/30 sm:scale-105"
-                            : "border-2 border-border hover:border-primary/50"
-                        }`}
+                    {/* CTA Button */}
+                    <div className="mt-8">
+                      <Link
+                        href={`/booking?service=${service.title}`}
+                        className="inline-flex px-6 py-3 bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-lg font-medium hover:shadow-lg hover:shadow-primary/40 transition-all"
                       >
-                        {pkg.isPopular && (
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent pointer-events-none" />
-                        )}
-
-                        {pkg.isPopular && (
-                          <div className="text-center mb-4">
-                            <span className="inline-block px-3 sm:px-4 py-1 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm font-semibold">
-                              POPULAR
-                            </span>
-                          </div>
-                        )}
-                        <h4 className="text-xl sm:text-2xl font-bold mb-2 text-primary">{pkg.name}</h4>
-                        <div className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                          {pkg.price}
-                        </div>
-                        <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                          {pkg.features.map((feature) => (
-                            <li key={feature} className="flex items-center gap-2">
-                              <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span className="text-xs sm:text-sm text-foreground/70">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <Link
-                          href={`/booking?service=${service.title}&package=${pkg.name}`}
-                          className={`w-full py-2 sm:py-3 rounded-lg font-medium transition-all relative z-10 text-sm sm:text-base flex items-center justify-center ${
-                            pkg.isPopular
-                              ? "bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:shadow-lg hover:shadow-primary/40"
-                              : "bg-primary/20 text-primary hover:bg-primary/30"
-                          }`}
-                        >
-                          Get Started
-                        </Link>
-                      </motion.div>
-                    ))}
-                  </div>
+                        Book {service.title}
+                      </Link>
+                    </div>
+                  </motion.div>
                 </div>
               </motion.div>
             ))}
+          </div>
+        </section>
+
+        {/* Why Choose Us Section */}
+        <section className="py-16 sm:py-20 px-4 bg-card/50">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-3xl sm:text-4xl font-bold mb-12"
+            >
+              Why Choose <span className="text-primary">JayArts</span>
+            </motion.h2>
+
+            <div className="grid sm:grid-cols-3 gap-6">
+              {[
+                {
+                  title: "Professional Quality",
+                  description: "Industry-leading equipment and expert techniques"
+                },
+                {
+                  title: "Creative Excellence",
+                  description: "Artistic vision that brings your ideas to life"
+                },
+                {
+                  title: "Client Focused",
+                  description: "Tailored solutions that meet your specific needs"
+                }
+              ].map((item, idx) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1, duration: 0.6 }}
+                  viewport={{ once: true }}
+                  className="glass-effect p-6 rounded-xl border border-border"
+                >
+                  <h3 className="text-lg font-semibold text-primary mb-2">{item.title}</h3>
+                  <p className="text-sm text-foreground/60">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -290,7 +220,7 @@ export default function Services() {
                 Ready to Start Your Project?
               </h2>
               <p className="text-foreground/70 mb-8 max-w-2xl mx-auto">
-                Contact us for custom quotes or to discuss your specific requirements. We&apos;re here to bring your vision to life.
+                Contact us to discuss your specific requirements. We&apos;re here to bring your vision to life.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
