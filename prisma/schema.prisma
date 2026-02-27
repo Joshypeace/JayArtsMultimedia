@@ -84,6 +84,7 @@ model PortfolioItem {
   content     String?        // For detailed descriptions
   
   // Media
+  images      Json           @default("[]") // Array of image URLs
   imageUrl    String
   videoUrl    String?
   thumbnailUrl String
