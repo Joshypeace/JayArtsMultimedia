@@ -1,9 +1,28 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Plus, Trash2, Eye, EyeOff, Upload } from "lucide-react"
+import { motion, Reorder } from "framer-motion"
+import { 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  Eye, 
+  EyeOff, 
+  Upload, 
+  X,
+  GripVertical,
+  ChevronLeft,
+  ChevronRight,
+  Loader2
+} from "lucide-react"
 import { CldImage } from 'next-cloudinary'
+
+interface PortfolioImage {
+  url: string
+  thumbnail: string
+  caption?: string
+  order: number
+}
 
 interface PortfolioItem {
   id: string
@@ -11,7 +30,8 @@ interface PortfolioItem {
   slug: string
   description: string
   category: "PHOTOGRAPHY" | "VIDEOGRAPHY" | "GRAPHIC_DESIGN"
-  imageUrl: string
+  images: PortfolioImage[]  // New field for multiple images
+  imageUrl: string          // Main image (first image)
   videoUrl: string | null
   thumbnailUrl: string
   featured: boolean
@@ -26,17 +46,20 @@ export default function ManagePortfolio() {
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [showImagePreview, setShowImagePreview] = useState(false)
+  
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     category: "PHOTOGRAPHY" as "PHOTOGRAPHY" | "VIDEOGRAPHY" | "GRAPHIC_DESIGN",
     tags: "",
     featured: false,
-    imageUrl: "",
+    images: [] as PortfolioImage[],
     videoUrl: "",
-    thumbnailUrl: ""
   })
-  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     fetchPortfolioItems()
@@ -57,27 +80,37 @@ export default function ManagePortfolio() {
   }
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const files = event.target.files
+    if (!files || files.length === 0) return
 
     setUploading(true)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', 'image')
+      const uploadPromises = Array.from(files).map(async (file, fileIndex) => {
+        const uploadFormData = new FormData()
+        uploadFormData.append('file', file)
+        uploadFormData.append('type', 'image')
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadFormData
+        })
+
+        if (!response.ok) throw new Error("Upload failed")
+        const data = await response.json()
+        
+        return {
+          url: data.url,
+          thumbnail: data.url, // You can generate a thumbnail URL if needed
+          caption: "",
+          order: formData.images.length + fileIndex
+        }
       })
 
-      if (!response.ok) throw new Error("Upload failed")
-      const data = await response.json()
+      const uploadedImages = await Promise.all(uploadPromises)
       
       setFormData(prev => ({
         ...prev,
-        imageUrl: data.url,
-        thumbnailUrl: data.url
+        images: [...prev.images, ...uploadedImages]
       }))
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed")
@@ -86,31 +119,108 @@ export default function ManagePortfolio() {
     }
   }
 
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }))
+  }
+
+  const updateImageCaption = (index: number, caption: string) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.map((img, i) => 
+        i === index ? { ...img, caption } : img
+      )
+    }))
+  }
+
+  const reorderImages = (newOrder: PortfolioImage[]) => {
+    setFormData(prev => ({
+      ...prev,
+      images: newOrder.map((img, index) => ({ ...img, order: index }))
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
+    // Validate at least one image
+    if (formData.images.length === 0) {
+      setError("Please upload at least one image")
+      return
+    }
+
     try {
       const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+      
+      // Prepare images with order
+      const imagesWithOrder = formData.images.map((img, index) => ({
+        ...img,
+        order: index
+      }))
 
-      const response = await fetch('/api/admin/portfolio', {
-        method: 'POST',
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        tags: tagsArray,
+        featured: formData.featured,
+        images: imagesWithOrder,
+        imageUrl: imagesWithOrder[0]?.url || "", // First image as main
+        thumbnailUrl: imagesWithOrder[0]?.thumbnail || "",
+        videoUrl: formData.videoUrl || null
+      }
+
+      const url = editingId 
+        ? `/api/admin/portfolio/${editingId}`
+        : '/api/admin/portfolio'
+      
+      const method = editingId ? 'PATCH' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          tags: tagsArray
-        })
+        body: JSON.stringify(payload)
       })
 
       if (!response.ok) throw new Error("Failed to save portfolio item")
       
-      const newItem = await response.json()
-      setItems(prev => [newItem, ...prev])
+      const savedItem = await response.json()
+      
+      if (editingId) {
+        setItems(prev => prev.map(item => item.id === editingId ? savedItem : item))
+      } else {
+        setItems(prev => [savedItem, ...prev])
+      }
+      
       setShowForm(false)
       resetForm()
+      setEditingId(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save")
     }
+  }
+
+  const handleEdit = (item: PortfolioItem) => {
+    setFormData({
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      tags: item.tags.join(', '),
+      featured: item.featured,
+      images: item.images || [{ 
+        url: item.imageUrl, 
+        thumbnail: item.thumbnailUrl,
+        caption: "",
+        order: 0 
+      }],
+      videoUrl: item.videoUrl || "",
+    })
+    setEditingId(item.id)
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelete = async (id: string) => {
@@ -156,10 +266,10 @@ export default function ManagePortfolio() {
       category: "PHOTOGRAPHY",
       tags: "",
       featured: false,
-      imageUrl: "",
+      images: [],
       videoUrl: "",
-      thumbnailUrl: ""
     })
+    setEditingId(null)
   }
 
   const formatDate = (dateString: string | null) => {
@@ -188,7 +298,10 @@ export default function ManagePortfolio() {
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              resetForm()
+              setShowForm(!showForm)
+            }}
             className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90 transition-all"
           >
             <Plus size={20} />
@@ -209,10 +322,12 @@ export default function ManagePortfolio() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-card border border-border rounded-xl p-6 space-y-6"
         >
-          <h2 className="text-2xl font-bold">Add New Portfolio Item</h2>
+          <h2 className="text-2xl font-bold">
+            {editingId ? 'Edit Portfolio Item' : 'Add New Portfolio Item'}
+          </h2>
           
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Title *</label>
@@ -261,43 +376,6 @@ export default function ManagePortfolio() {
                   />
                   <label htmlFor="featured" className="text-sm">Featured item</label>
                 </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Image *</label>
-                  <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-                    {formData.imageUrl ? (
-                      <div className="relative h-40 rounded-lg overflow-hidden mb-2">
-                        <CldImage
-                          src={formData.imageUrl}
-                          alt="Preview"
-                          width={300}
-                          height={200}
-                          crop="fill"
-                          gravity="auto"
-                          className="object-cover rounded-lg"
-                        />
-                      </div>
-                    ) : (
-                      <Upload className="w-12 h-12 text-foreground/40 mx-auto mb-2" />
-                    )}
-                    
-                    <input
-                      type="file"
-                      id="imageUpload"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    <label htmlFor="imageUpload" className="cursor-pointer">
-                      <span className="text-primary hover:underline">
-                        {uploading ? "Uploading..." : "Click to upload image"}
-                      </span>
-                    </label>
-                    <p className="text-xs text-foreground/60 mt-1">Recommended: 1200x800px</p>
-                  </div>
-                </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Video URL (optional)</label>
@@ -308,6 +386,109 @@ export default function ManagePortfolio() {
                     className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
                     placeholder="https://youtube.com/..."
                   />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Images *</label>
+                  
+                  {/* Image Upload Area */}
+                  <div className="border-2 border-dashed border-border rounded-lg p-4 text-center mb-4">
+                    <input
+                      type="file"
+                      id="imageUpload"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                    <label htmlFor="imageUpload" className="cursor-pointer block">
+                      {uploading ? (
+                        <div className="py-4">
+                          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
+                          <p className="text-primary">Uploading...</p>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="w-12 h-12 text-foreground/40 mx-auto mb-2" />
+                          <span className="text-primary hover:underline">
+                            Click to upload images
+                          </span>
+                          <p className="text-xs text-foreground/60 mt-1">
+                            You can select multiple images
+                          </p>
+                          <p className="text-xs text-foreground/60">
+                            Recommended: 1200x800px each
+                          </p>
+                        </>
+                      )}
+                    </label>
+                  </div>
+
+                  {/* Image Gallery with Drag to Reorder */}
+                  {formData.images.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Images ({formData.images.length}) - Drag to reorder
+                      </label>
+                      <Reorder.Group
+                        axis="y"
+                        values={formData.images}
+                        onReorder={reorderImages}
+                        className="space-y-2"
+                      >
+                        {formData.images.map((image, index) => (
+                          <Reorder.Item
+                            key={image.url}
+                            value={image}
+                            className="flex items-center gap-2 p-2 bg-input/50 border border-border rounded-lg"
+                          >
+                            <div className="cursor-move">
+                              <GripVertical size={18} className="text-foreground/40" />
+                            </div>
+                            
+                            <div className="relative w-16 h-12 rounded overflow-hidden flex-shrink-0">
+                              <CldImage
+                                src={image.url}
+                                alt={`Preview ${index + 1}`}
+                                width={64}
+                                height={48}
+                                crop="fill"
+                                gravity="auto"
+                                className="object-cover"
+                              />
+                            </div>
+
+                            <input
+                              type="text"
+                              value={image.caption || ''}
+                              onChange={(e) => updateImageCaption(index, e.target.value)}
+                              placeholder="Caption (optional)"
+                              className="flex-1 px-2 py-1 bg-input border border-border rounded text-sm focus:outline-none focus:border-primary"
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() => setSelectedImageIndex(index)}
+                              className="p-1 hover:bg-primary/10 rounded"
+                            >
+                              <Eye size={16} className="text-foreground/60" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="p-1 hover:bg-red-500/10 rounded"
+                            >
+                              <X size={16} className="text-red-400" />
+                            </button>
+                          </Reorder.Item>
+                        ))}
+                      </Reorder.Group>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -330,7 +511,7 @@ export default function ManagePortfolio() {
                 disabled={uploading}
                 className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90 disabled:opacity-50"
               >
-                Save Item
+                {editingId ? 'Update Item' : 'Save Item'}
               </button>
               <button
                 type="button"
@@ -359,6 +540,7 @@ export default function ManagePortfolio() {
               <tr className="border-b border-border bg-background/50">
                 <th className="text-left py-4 px-6 font-semibold">Preview</th>
                 <th className="text-left py-4 px-6 font-semibold">Title</th>
+                <th className="text-left py-4 px-6 font-semibold">Images</th>
                 <th className="text-left py-4 px-6 font-semibold">Category</th>
                 <th className="text-left py-4 px-6 font-semibold">Status</th>
                 <th className="text-left py-4 px-6 font-semibold">Published</th>
@@ -378,7 +560,7 @@ export default function ManagePortfolio() {
                   <td className="py-4 px-6">
                     <div className="relative w-16 h-12 rounded overflow-hidden">
                       <CldImage
-                        src={item.imageUrl}
+                        src={item.images?.[0]?.url || item.imageUrl}
                         alt={item.title}
                         width={64}
                         height={48}
@@ -395,6 +577,31 @@ export default function ManagePortfolio() {
                         Featured
                       </span>
                     )}
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex -space-x-2">
+                      {item.images?.slice(0, 4).map((img, i) => (
+                        <div
+                          key={i}
+                          className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden"
+                        >
+                          <CldImage
+                            src={img.url}
+                            alt=""
+                            width={32}
+                            height={32}
+                            crop="fill"
+                            gravity="auto"
+                            className="object-cover"
+                          />
+                        </div>
+                      ))}
+                      {(item.images?.length || 1) > 4 && (
+                        <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center border-2 border-background">
+                          +{(item.images?.length || 1) - 4}
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="py-4 px-6">
                     <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">
@@ -431,15 +638,18 @@ export default function ManagePortfolio() {
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex gap-2">
-                      {/* <button 
+                      <button 
                         className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
                         onClick={() => window.open(`/portfolio/${item.slug}`, '_blank')}
                       >
                         <Eye size={18} className="text-foreground/60" />
                       </button>
-                      <button className="p-2 hover:bg-primary/10 rounded-lg transition-colors">
+                      <button 
+                        className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
+                        onClick={() => handleEdit(item)}
+                      >
                         <Edit2 size={18} className="text-foreground/60" />
-                      </button> */}
+                      </button>
                       <button 
                         className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
                         onClick={() => handleDelete(item.id)}
@@ -461,6 +671,57 @@ export default function ManagePortfolio() {
           </div>
         )}
       </motion.div>
+
+      {/* Image Preview Modal */}
+      {showImagePreview && formData.images[selectedImageIndex] && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative max-w-4xl w-full"
+          >
+            <button
+              onClick={() => setShowImagePreview(false)}
+              className="absolute -top-10 right-0 text-white hover:text-primary"
+            >
+              <X size={24} />
+            </button>
+
+            <div className="relative aspect-video rounded-lg overflow-hidden">
+              <CldImage
+                src={formData.images[selectedImageIndex].url}
+                alt="Preview"
+                fill
+                className="object-contain"
+              />
+            </div>
+
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => setSelectedImageIndex(prev => 
+                  prev > 0 ? prev - 1 : formData.images.length - 1
+                )}
+                className="px-4 py-2 bg-primary/20 text-white rounded-lg hover:bg-primary/30"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              
+              <span className="text-white">
+                {selectedImageIndex + 1} / {formData.images.length}
+              </span>
+              
+              <button
+                onClick={() => setSelectedImageIndex(prev => 
+                  prev < formData.images.length - 1 ? prev + 1 : 0
+                )}
+                className="px-4 py-2 bg-primary/20 text-white rounded-lg hover:bg-primary/30"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
