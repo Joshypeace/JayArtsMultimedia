@@ -1,19 +1,12 @@
-// app/api/portfolio/[slug]/route.ts
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-// Define params type for Next.js 14
-export const dynamic = 'force-dynamic'
-
 export async function GET(
   request: Request,
-  context: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const params = await context.params
-    const slug = params.slug
-    
-    console.log("API Route - Fetching portfolio item with slug:", slug)
+    const { slug } = await params
     
     if (!slug) {
       return NextResponse.json(

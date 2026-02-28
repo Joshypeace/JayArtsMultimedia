@@ -58,6 +58,7 @@ export async function POST(request: Request) {
         slug: slug,
         description: data.description,
         category: data.category,
+        images: data.images,
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl || null,
         thumbnailUrl: data.thumbnailUrl,

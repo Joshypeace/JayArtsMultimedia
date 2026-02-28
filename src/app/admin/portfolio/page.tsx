@@ -22,6 +22,8 @@ interface PortfolioImage {
   thumbnail: string
   caption?: string
   order: number
+  id?: string
+  public_id?: string
 }
 
 interface PortfolioItem {
@@ -30,8 +32,46 @@ interface PortfolioItem {
   slug: string
   description: string
   category: "PHOTOGRAPHY" | "VIDEOGRAPHY" | "GRAPHIC_DESIGN"
-  images: PortfolioImage[]  // New field for multiple images
-  imageUrl: string          // Main image (first image)
+  images: PortfolioImage[]
+  imageUrl: string
+  videoUrl: string | null
+  thumbnailUrl: string
+  featured: boolean
+  publishedAt: string | null
+  tags: string[]
+  views: number
+  createdAt: string
+}
+
+interface UploadResponse {
+  success: boolean
+  partial?: boolean
+  uploaded?: Array<{
+    url: string
+    public_id: string
+    thumbnail?: string
+    width?: number
+    height?: number
+    format?: string
+    original_filename?: string
+  }>
+  failed?: Array<{
+    index: number
+    error: string
+    original_filename?: string
+  }>
+  error?: string
+  message?: string
+}
+
+interface SavedItemResponse {
+  id: string
+  title: string
+  slug: string
+  description: string
+  category: "PHOTOGRAPHY" | "VIDEOGRAPHY" | "GRAPHIC_DESIGN"
+  images: PortfolioImage[]
+  imageUrl: string
   videoUrl: string | null
   thumbnailUrl: string
   featured: boolean
@@ -43,21 +83,29 @@ interface PortfolioItem {
 
 export default function ManagePortfolio() {
   const [items, setItems] = useState<PortfolioItem[]>([])
-  const [showForm, setShowForm] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [uploading, setUploading] = useState(false)
+  const [showForm, setShowForm] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string>("")
+  const [uploading, setUploading] = useState<boolean>(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const [showImagePreview, setShowImagePreview] = useState(false)
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0)
+  const [showImagePreview, setShowImagePreview] = useState<boolean>(false)
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string
+    description: string
+    category: "PHOTOGRAPHY" | "VIDEOGRAPHY" | "GRAPHIC_DESIGN"
+    tags: string
+    featured: boolean
+    images: PortfolioImage[]
+    videoUrl: string
+  }>({
     title: "",
     description: "",
-    category: "PHOTOGRAPHY" as "PHOTOGRAPHY" | "VIDEOGRAPHY" | "GRAPHIC_DESIGN",
+    category: "PHOTOGRAPHY",
     tags: "",
     featured: false,
-    images: [] as PortfolioImage[],
+    images: [],
     videoUrl: "",
   })
 
@@ -65,7 +113,7 @@ export default function ManagePortfolio() {
     fetchPortfolioItems()
   }, [])
 
-  const fetchPortfolioItems = async () => {
+  const fetchPortfolioItems = async (): Promise<void> => {
     try {
       setLoading(true)
       const response = await fetch('/api/admin/portfolio')
@@ -79,54 +127,69 @@ export default function ManagePortfolio() {
     }
   }
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const files = event.target.files
     if (!files || files.length === 0) return
 
     setUploading(true)
+    setError("")
+    
     try {
-      const uploadPromises = Array.from(files).map(async (file, fileIndex) => {
-        const uploadFormData = new FormData()
-        uploadFormData.append('file', file)
-        uploadFormData.append('type', 'image')
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadFormData
-        })
-
-        if (!response.ok) throw new Error("Upload failed")
-        const data = await response.json()
-        
-        return {
-          url: data.url,
-          thumbnail: data.url, // You can generate a thumbnail URL if needed
-          caption: "",
-          order: formData.images.length + fileIndex
-        }
+      const formData = new FormData()
+      
+      // Append all files
+      Array.from(files).forEach(file => {
+        formData.append('files', file)
       })
 
-      const uploadedImages = await Promise.all(uploadPromises)
-      
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...uploadedImages]
-      }))
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data: UploadResponse = await response.json()
+
+      if (data.success) {
+        // Process successfully uploaded images
+        const newImages: PortfolioImage[] = (data.uploaded || []).map((img, index) => ({
+          id: img.public_id || `${img.url}-${Date.now()}-${index}`,
+          url: img.url,
+          thumbnail: img.thumbnail || img.url,
+          caption: "",
+          order: formData.getAll('files').length + index,
+          public_id: img.public_id
+        }))
+
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...newImages]
+        }))
+
+        // Show warning for failed uploads
+        if (data.partial && data.failed && data.failed.length > 0) {
+          setError(`${data.failed.length} image(s) failed to upload`)
+        }
+      } else {
+        setError(data.error || "Upload failed")
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed")
+      console.error("Upload error:", err)
+      setError("Failed to upload images")
     } finally {
       setUploading(false)
+      // Clear the input
+      event.target.value = ''
     }
   }
 
-  const removeImage = (index: number) => {
+  const removeImage = (index: number): void => {
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }))
   }
 
-  const updateImageCaption = (index: number, caption: string) => {
+  const updateImageCaption = (index: number, caption: string): void => {
     setFormData(prev => ({
       ...prev,
       images: prev.images.map((img, i) => 
@@ -135,14 +198,14 @@ export default function ManagePortfolio() {
     }))
   }
 
-  const reorderImages = (newOrder: PortfolioImage[]) => {
+  const reorderImages = (newOrder: PortfolioImage[]): void => {
     setFormData(prev => ({
       ...prev,
       images: newOrder.map((img, index) => ({ ...img, order: index }))
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
     setError("")
 
@@ -153,10 +216,10 @@ export default function ManagePortfolio() {
     }
 
     try {
-      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+      const tagsArray: string[] = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       
       // Prepare images with order
-      const imagesWithOrder = formData.images.map((img, index) => ({
+      const imagesWithOrder: PortfolioImage[] = formData.images.map((img, index) => ({
         ...img,
         order: index
       }))
@@ -168,7 +231,7 @@ export default function ManagePortfolio() {
         tags: tagsArray,
         featured: formData.featured,
         images: imagesWithOrder,
-        imageUrl: imagesWithOrder[0]?.url || "", // First image as main
+        imageUrl: imagesWithOrder[0]?.url || "",
         thumbnailUrl: imagesWithOrder[0]?.thumbnail || "",
         videoUrl: formData.videoUrl || null
       }
@@ -187,7 +250,7 @@ export default function ManagePortfolio() {
 
       if (!response.ok) throw new Error("Failed to save portfolio item")
       
-      const savedItem = await response.json()
+      const savedItem: SavedItemResponse = await response.json()
       
       if (editingId) {
         setItems(prev => prev.map(item => item.id === editingId ? savedItem : item))
@@ -203,18 +266,22 @@ export default function ManagePortfolio() {
     }
   }
 
-  const handleEdit = (item: PortfolioItem) => {
+  const handleEdit = (item: PortfolioItem): void => {
     setFormData({
       title: item.title,
       description: item.description,
       category: item.category,
-      tags: item.tags.join(', '),
-      featured: item.featured,
-      images: item.images || [{ 
+      tags: item.tags?.join(', ') || '',
+      featured: item.featured || false,
+      images: item.images?.length ? item.images.map((img, idx) => ({
+        ...img,
+        id: img.public_id || `${img.url}-${idx}`
+      })) : [{ 
         url: item.imageUrl, 
         thumbnail: item.thumbnailUrl,
         caption: "",
-        order: 0 
+        order: 0,
+        id: `${item.imageUrl}-0`
       }],
       videoUrl: item.videoUrl || "",
     })
@@ -223,7 +290,7 @@ export default function ManagePortfolio() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string): Promise<void> => {
     if (!confirm("Are you sure you want to delete this item?")) return
 
     try {
@@ -239,7 +306,7 @@ export default function ManagePortfolio() {
     }
   }
 
-  const handleTogglePublish = async (id: string, currentlyPublished: boolean) => {
+  const handleTogglePublish = async (id: string, currentlyPublished: boolean): Promise<void> => {
     try {
       const response = await fetch(`/api/admin/portfolio/${id}/publish`, {
         method: 'PATCH',
@@ -252,14 +319,14 @@ export default function ManagePortfolio() {
 
       if (!response.ok) throw new Error("Failed to update status")
       
-      const updatedItem = await response.json()
+      const updatedItem: PortfolioItem = await response.json()
       setItems(prev => prev.map(item => item.id === id ? updatedItem : item))
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update")
     }
   }
 
-  const resetForm = () => {
+  const resetForm = (): void => {
     setFormData({
       title: "",
       description: "",
@@ -272,7 +339,7 @@ export default function ManagePortfolio() {
     setEditingId(null)
   }
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null): string => {
     if (!dateString) return "Not published"
     return new Date(dateString).toLocaleDateString()
   }
@@ -439,53 +506,73 @@ export default function ManagePortfolio() {
                         onReorder={reorderImages}
                         className="space-y-2"
                       >
-                        {formData.images.map((image, index) => (
-                          <Reorder.Item
-                            key={image.url}
-                            value={image}
-                            className="flex items-center gap-2 p-2 bg-input/50 border border-border rounded-lg"
-                          >
-                            <div className="cursor-move">
-                              <GripVertical size={18} className="text-foreground/40" />
-                            </div>
-                            
-                            <div className="relative w-16 h-12 rounded overflow-hidden flex-shrink-0">
-                              <CldImage
-                                src={image.url}
-                                alt={`Preview ${index + 1}`}
-                                width={64}
-                                height={48}
-                                crop="fill"
-                                gravity="auto"
-                                className="object-cover"
+                        {formData.images.map((image, index) => {
+                          // Generate a stable unique key
+                          const uniqueKey = image.id || `${image.url}-${index}`
+                          
+                          return (
+                            <Reorder.Item
+                              key={uniqueKey}
+                              value={image}
+                              className="flex items-center gap-2 p-2 bg-input/50 border border-border rounded-lg"
+                            >
+                              <div className="cursor-move">
+                                <GripVertical size={18} className="text-foreground/40" />
+                              </div>
+                              
+                              {/* Image Preview with error handling */}
+                              <div className="relative w-16 h-12 rounded overflow-hidden flex-shrink-0 bg-input">
+                                {image?.url ? (
+                                  <CldImage
+                                    src={image.url}
+                                    alt={`Preview ${index + 1}`}
+                                    width={64}
+                                    height={48}
+                                    crop="fill"
+                                    gravity="auto"
+                                    className="object-cover"
+                                    onError={(e) => {
+                                      console.error(`Failed to load image: ${image.url}`)
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center bg-red-500/10">
+                                    <span className="text-xs text-red-400">Error</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <input
+                                type="text"
+                                value={image.caption || ''}
+                                onChange={(e) => updateImageCaption(index, e.target.value)}
+                                placeholder="Caption (optional)"
+                                className="flex-1 px-2 py-1 bg-input border border-border rounded text-sm focus:outline-none focus:border-primary"
                               />
-                            </div>
 
-                            <input
-                              type="text"
-                              value={image.caption || ''}
-                              onChange={(e) => updateImageCaption(index, e.target.value)}
-                              placeholder="Caption (optional)"
-                              className="flex-1 px-2 py-1 bg-input border border-border rounded text-sm focus:outline-none focus:border-primary"
-                            />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedImageIndex(index)
+                                  setShowImagePreview(true)
+                                }}
+                                className="p-1 hover:bg-primary/10 rounded"
+                                disabled={!image?.url}
+                              >
+                                <Eye size={16} className={image?.url ? "text-foreground/60" : "text-foreground/20"} />
+                              </button>
 
-                            <button
-                              type="button"
-                              onClick={() => setSelectedImageIndex(index)}
-                              className="p-1 hover:bg-primary/10 rounded"
-                            >
-                              <Eye size={16} className="text-foreground/60" />
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="p-1 hover:bg-red-500/10 rounded"
-                            >
-                              <X size={16} className="text-red-400" />
-                            </button>
-                          </Reorder.Item>
-                        ))}
+                              <button
+                                type="button"
+                                onClick={() => removeImage(index)}
+                                className="p-1 hover:bg-red-500/10 rounded"
+                              >
+                                <X size={16} className="text-red-400" />
+                              </button>
+                            </Reorder.Item>
+                          )
+                        })}
                       </Reorder.Group>
                     </div>
                   )}
@@ -634,7 +721,7 @@ export default function ManagePortfolio() {
                     {formatDate(item.publishedAt)}
                   </td>
                   <td className="py-4 px-6 text-sm font-medium">
-                    {item.views.toLocaleString()}
+                    {item.views?.toLocaleString() || 0}
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex gap-2">
@@ -698,7 +785,7 @@ export default function ManagePortfolio() {
 
             <div className="flex justify-between items-center mt-4">
               <button
-                onClick={() => setSelectedImageIndex(prev => 
+                onClick={() => setSelectedImageIndex((prev: number) => 
                   prev > 0 ? prev - 1 : formData.images.length - 1
                 )}
                 className="px-4 py-2 bg-primary/20 text-white rounded-lg hover:bg-primary/30"
@@ -711,7 +798,7 @@ export default function ManagePortfolio() {
               </span>
               
               <button
-                onClick={() => setSelectedImageIndex(prev => 
+                onClick={() => setSelectedImageIndex((prev: number) => 
                   prev < formData.images.length - 1 ? prev + 1 : 0
                 )}
                 className="px-4 py-2 bg-primary/20 text-white rounded-lg hover:bg-primary/30"
