@@ -6,6 +6,8 @@ import { motion } from "framer-motion"
 import { Mail, Phone, MapPin, Send, Loader2 } from "lucide-react"
 import PublicNavBar from "@/components/public/navbar"
 import Footer from "@/components/public/footer"
+import { siFacebook, siInstagram } from "simple-icons"
+import type { SimpleIcon } from "simple-icons"
 
 // Service categories from your schema
 const serviceCategories = [
@@ -13,6 +15,19 @@ const serviceCategories = [
   "VIDEOGRAPHY",
   "GRAPHIC_DESIGN"
 ] as const
+
+const SimpleIconRenderer = ({ icon, className = "w-5 h-5" }: { icon: SimpleIcon; className?: string }) => (
+  <svg
+    className={className}
+    role="img"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+  >
+    <title>{icon.title}</title>
+    <path d={icon.path} />
+  </svg>
+);
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -438,29 +453,27 @@ export default function Contact() {
               </div>
 
               {/* Social Links */}
-              <div>
-                <h3 className="font-semibold mb-4">Follow Us</h3>
-                <div className="flex gap-4">
-                  {[
-                    { name: "Instagram", url: "https://www.instagram.com/jay_arts_multimedia?igsh=MWZ5YTl4Mjh3ZG9ndA%3D%3D&utm_source=qr", icon: "📸" },
-                    { name: "Facebook", url: "https://www.facebook.com/share/14Sc9c7Ddb2/?mibextid=wwXIfr", icon: "👍" },
-                    // { name: "LinkedIn", url: "https://linkedin.com", icon: "💼" },
-                    // { name: "Twitter", url: "https://twitter.com", icon: "🐦" }
-                  ].map((social) => (
-                    <motion.a
-                      key={social.name}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={{ scale: 1.1, y: -2 }}
-                      className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition-all text-foreground/60 hover:text-primary hover:border-primary/50"
-                      title={social.name}
-                    >
-                      <span className="text-lg">{social.icon}</span>
-                    </motion.a>
-                  ))}
-                </div>
-              </div>
+                <div>
+                 <h3 className="font-semibold mb-4">Follow Us</h3>
+                 <div className="flex gap-4">
+                   {[
+                     { name: "Instagram", url: "https://www.instagram.com/jay_arts_multimedia?igsh=MWZ5YTl4Mjh3ZG9ndA%3D%3D&utm_source=qr", icon: siInstagram },
+                     { name: "Facebook", url: "https://www.facebook.com/share/14Sc9c7Ddb2/?mibextid=wwXIfr", icon: siFacebook },
+                   ].map((social) => (
+                     <motion.a
+                       key={social.name}
+                       href={social.url}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       whileHover={{ scale: 1.1, y: -2 }}
+                       className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition-all text-foreground/60 hover:text-primary hover:border-primary/50"
+                       title={social.name}
+                     >
+                       <SimpleIconRenderer icon={social.icon} />
+                     </motion.a>
+                   ))}
+                 </div>
+               </div>
 
               {/* Map */}
               <div className="glass-effect border border-border rounded-xl overflow-hidden h-64">
