@@ -9,7 +9,7 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -19,7 +19,7 @@ export async function PATCH(
 
     const { published, publishedAt } = await request.json()
     const { id } = await context.params
-    
+
     const updatedItem = await prisma.portfolioItem.update({
       where: { id },
       data: {
@@ -34,7 +34,7 @@ export async function PATCH(
         }
       }
     })
-    
+
     return NextResponse.json(updatedItem)
   } catch (error) {
     console.error("Portfolio publish error:", error)
