@@ -20,13 +20,7 @@ const eventTypes = [
   "Multi-Service Package"
 ]
 
-const budgetRanges = [
-  { value: "under-500000", label: "Under MWK 500,000" },
-  { value: "500000-1000000", label: "MWK 500,000 - 1,000,000" },
-  { value: "1000000-2500000", label: "MWK 1,000,000 - 2,500,000" },
-  { value: "2500000-5000000", label: "MWK 2,500,000 - 5,000,000" },
-  { value: "5000000+", label: "MWK 5,000,000+" }
-]
+
 
 export default function BookingContent() {
   const searchParams = useSearchParams()
@@ -330,26 +324,26 @@ export default function BookingContent() {
                           </div>
 
                           <div>
-                            <label htmlFor="budgetRange" className="block text-sm font-semibold mb-3 text-foreground">
-                              Budget Range <span className="text-primary">*</span>
+                            <label
+                              htmlFor="budgetRange"
+                              className="block text-sm font-semibold mb-3 text-foreground"
+                            >
+                              Budget (MWK) <span className="text-primary">*</span>
                             </label>
-                            <select
+                          
+                            <input
+                              type="number"
                               id="budgetRange"
                               name="budgetRange"
                               value={formData.budgetRange}
                               onChange={handleChange}
                               required
+                              min="0"
+                              placeholder="Enter your budget in MWK"
                               className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                            >
-                              <option value="">Select budget range (MWK)</option>
-                              {budgetRanges.map((range) => (
-                                <option key={range.value} value={range.value}>
-                                  {range.label}
-                                </option>
-                              ))}
-                            </select>
+                            />
                           </div>
-                        </>
+                  </>
                       )}
 
                       {section.title === "Contact Information" && (
