@@ -7,17 +7,20 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    
+
     if (!slug) {
       return NextResponse.json(
         { error: "Slug is required" },
         { status: 400 }
       )
     }
-    
-    // Find the portfolio item
-    const portfolioItem = await prisma.portfolioItem.findUnique({
+
+    // Update + return in one query
+    const portfolioItem = await prisma.portfolioItem.update({
       where: { slug },
+      data: {
+        views: { increment: 1 }
+      },
       include: {
         user: {
           select: {
@@ -26,25 +29,18 @@ export async function GET(
         }
       }
     })
-    
+
     if (!portfolioItem) {
       return NextResponse.json(
         { error: "Portfolio item not found" },
         { status: 404 }
       )
     }
-    
-    // Increment view count
-    await prisma.portfolioItem.update({
-      where: { slug },
-      data: {
-        views: { increment: 1 }
-      }
-    })
-    
+
     return NextResponse.json(portfolioItem)
   } catch (error) {
     console.error("Portfolio item fetch error:", error)
+
     return NextResponse.json(
       { error: "Failed to fetch portfolio item" },
       { status: 500 }
