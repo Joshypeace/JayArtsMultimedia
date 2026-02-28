@@ -6,6 +6,7 @@ import { CldImage } from 'next-cloudinary'
 import { X, Play, Tag } from "lucide-react"
 import PublicNavBar from "@/components/public/navbar"
 import Footer from "@/components/public/footer"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface PortfolioItem {
   id: string
@@ -14,6 +15,12 @@ interface PortfolioItem {
   description: string
   category: "PHOTOGRAPHY" | "VIDEOGRAPHY" | "GRAPHIC_DESIGN"
   imageUrl: string
+  images?: {
+    url: string
+    thumbnail: string
+    caption: string
+    order: number
+  }[]
   videoUrl: string | null
   thumbnailUrl: string
   featured: boolean
@@ -30,10 +37,17 @@ export default function Portfolio() {
   const [selectedCategory, setSelectedCategory] = useState("ALL")
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [currentIndex, setCurrentIndex] = useState(0)
 
+  // Fetch portfolio items
   useEffect(() => {
     fetchPortfolioItems()
   }, [])
+
+  // Reset current index when selected item changes
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [selectedItem])
 
   const fetchPortfolioItems = async () => {
     try {
@@ -47,6 +61,24 @@ export default function Portfolio() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const imagesArray = selectedItem?.images && selectedItem.images.length > 0
+    ? selectedItem.images
+    : selectedItem?.imageUrl 
+      ? [{ url: selectedItem.imageUrl }] 
+      : []
+
+  const NextSlide = () => {
+    setCurrentIndex((prev) =>
+      prev === imagesArray.length - 1 ? 0 : prev + 1
+    )
+  }
+
+  const PrevSlide = () => {
+    setCurrentIndex((prev) =>
+      prev === 0 ? imagesArray.length - 1 : prev - 1
+    )
   }
 
   const filteredItems = items
@@ -175,22 +207,12 @@ export default function Portfolio() {
                       className="group cursor-pointer relative overflow-hidden rounded-xl"
                     >
                       <div className="relative h-64">
-                        {/* Using CldImage for optimized delivery */}
                         <CldImage
                           src={item.imageUrl}
                           alt={item.title}
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          crop={{
-                            type: 'fill',
-                            gravity: 'auto',
-                            source: true
-                          }}
-                          effects={[{
-                            background: 'black'
-                          }]}
-                          loading="lazy"
                         />
                         
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -229,7 +251,7 @@ export default function Portfolio() {
                         <div className="flex justify-between items-center">
                           <span className="text-primary text-sm">{item.category}</span>
                           <span className="text-xs text-foreground/60">
-                            {item.views.toLocaleString()} views
+                            {item.views?.toLocaleString() || 0} views
                           </span>
                         </div>
                       </div>
@@ -265,30 +287,75 @@ export default function Portfolio() {
                 <X size={24} />
               </button>
               
-              <div className="relative w-full h-96">
-                {/* Using CldImage for lightbox with better optimization */}
-                <CldImage
-                  src={selectedItem.imageUrl}
-                  alt={selectedItem.title}
-                  fill
-                  sizes="100vw"
-                  className="object-contain"
-                  crop={{
-                    type: 'fill',
-                    gravity: 'auto',
-                    source: true
-                  }}
-                  dpr="auto"
-                  quality="auto"
-                  loading="eager"
-                />
+              <div className="relative w-full h-96 flex items-center justify-center overflow-hidden bg-black/10">
+                {imagesArray.length > 0 && (
+                  <>
+                    {/* Image */}
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentIndex}
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        transition={{ duration: 0.3 }}
+                        className="absolute inset-0"
+                      >
+                        <CldImage
+                          src={imagesArray[currentIndex]?.url || selectedItem.imageUrl}
+                          alt={selectedItem.title}
+                          fill
+                          sizes="100vw"
+                          className="object-contain"
+                          quality="auto"
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+
+                    {/* Left Arrow */}
+                    {imagesArray.length > 1 && (
+                      <button
+                        onClick={PrevSlide}
+                        className="absolute left-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition z-20"
+                      >
+                        <ChevronLeft size={24} />
+                      </button>
+                    )}
+
+                    {/* Right Arrow */}
+                    {imagesArray.length > 1 && (
+                      <button
+                        onClick={NextSlide}
+                        className="absolute right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition z-20"
+                      >
+                        <ChevronRight size={24} />
+                      </button>
+                    )}
+
+                    {/* Dots */}
+                    {imagesArray.length > 1 && (
+                      <div className="absolute bottom-4 flex gap-2 z-20">
+                        {imagesArray.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentIndex(index)}
+                            className={`w-3 h-3 rounded-full transition ${
+                              index === currentIndex
+                                ? "bg-white"
+                                : "bg-white/40"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
                 
                 {selectedItem.videoUrl && (
                   <a
                     href={selectedItem.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+                    className="absolute bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 z-20"
                   >
                     <Play size={20} />
                     Watch Video
@@ -312,7 +379,7 @@ export default function Portfolio() {
                     </div>
                   </div>
                   <span className="text-sm text-foreground/60">
-                    {selectedItem.views.toLocaleString()} views
+                    {selectedItem.views?.toLocaleString() || 0} views
                   </span>
                 </div>
                 
