@@ -32,7 +32,7 @@ export default function ApprovalsPage() {
 
   useEffect(() => {
     fetchUsers()
-  })
+  }, [filter])
 
   const fetchUsers = async () => {
     try {
