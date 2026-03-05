@@ -71,8 +71,8 @@ const SidebarContent = ({
 }: SidebarContentProps) => (
   <div className="flex-1 flex flex-col p-6 overflow-y-auto">
     {/* Logo */}
-    <div className="flex items-center gap-3 mb-6">
-      <div className="w-8 h-8 bg-gradient-to-br from-primary to-yellow-500 rounded-full flex items-center justify-center">
+    <div className={`flex items-center gap-3 mb-6 ${isCollapsed ? "justify-center" : ""}`}>
+      <div className="w-8 h-8 bg-gradient-to-br from-primary to-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
         <Camera size={18} className="text-white" />
       </div>
       {!isCollapsed && (
@@ -86,17 +86,17 @@ const SidebarContent = ({
     {/* User Info */}
     {currentUser && (
       <div className={`flex items-center gap-3 p-3 rounded-lg bg-primary/5 mb-6 ${isCollapsed ? "justify-center" : ""}`}>
-        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
           {currentUser.image ? (
-              <Image 
-                src={currentUser.image} 
-                alt={currentUser.name || "User"}
-                fill
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <User size={16} className="text-primary" />
-            )}
+            <Image 
+              src={currentUser.image} 
+              alt={currentUser.name || "User"}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <User size={16} className="text-primary" />
+          )}
         </div>
         {!isCollapsed && (
           <div className="min-w-0">
@@ -132,11 +132,11 @@ const SidebarContent = ({
           >
             <Icon 
               size={20} 
-              className={`${active ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} 
+              className={`${active ? "text-primary" : "text-muted-foreground group-hover:text-primary"} flex-shrink-0`} 
             />
             {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-            {isCollapsed && !active && (
-              <div className="absolute left-full ml-2 px-2 py-1 bg-primary text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            {isCollapsed && (
+              <div className="absolute left-full ml-2 px-2 py-1 bg-primary text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                 {item.label}
               </div>
             )}
@@ -152,12 +152,12 @@ const SidebarContent = ({
           href="/" 
           target="_blank"
           onClick={onItemClick}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors ${isCollapsed ? "justify-center" : ""}`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors relative group ${isCollapsed ? "justify-center" : ""}`}
         >
-          <Home size={20} />
+          <Home size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="text-sm font-medium">View Website</span>}
           {isCollapsed && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-primary text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            <div className="absolute left-full ml-2 px-2 py-1 bg-primary text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
               View Website
             </div>
           )}
@@ -168,12 +168,15 @@ const SidebarContent = ({
             await handleLogout()
             onItemClick?.()
           }}
-          className={`flex items-center gap-2 px-4 py-2.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors w-full ${
-            isCollapsed ? "justify-center" : ""
-          }`}
+          className={`flex items-center gap-2 px-4 py-2.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors w-full relative group ${isCollapsed ? "justify-center" : ""}`}
         >
-          <LogOut size={20} />
+          <LogOut size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
+          {isCollapsed && (
+            <div className="absolute left-full ml-2 px-2 py-1 bg-primary text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+              Logout
+            </div>
+          )}
         </button>
       </div>
     </div>
