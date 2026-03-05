@@ -32,7 +32,7 @@ export default function ApprovalsPage() {
 
   useEffect(() => {
     fetchUsers()
-  }, [filter])
+  })
 
   const fetchUsers = async () => {
     try {
@@ -48,7 +48,7 @@ export default function ApprovalsPage() {
       } else {
         setError(data.error)
       }
-    } catch (err) {
+    } catch{
       setError("Failed to load users")
     } finally {
       setLoading(false)
@@ -73,7 +73,7 @@ export default function ApprovalsPage() {
       } else {
         setError(data.error)
       }
-    } catch (err) {
+    } catch {
       setError("Failed to approve user")
     } finally {
       setProcessingId(null)
@@ -96,7 +96,7 @@ export default function ApprovalsPage() {
       } else {
         setError(data.error)
       }
-    } catch (err) {
+    } catch {
       setError("Failed to reject user")
     } finally {
       setProcessingId(null)
