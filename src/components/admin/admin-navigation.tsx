@@ -16,6 +16,7 @@ import {
   Camera,
   Home,
   User,
+  FileWarning,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -32,6 +33,7 @@ const navItems = [
   { label: "Bookings", href: "/admin/bookings", icon: Calendar, exact: false },
   { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquare, exact: false },
   { label: "Users", href: "/admin/users", icon: Users, exact: false },
+  { label: "Approvals", href: "/admin/approvals", icon: FileWarning, exact: false },
   { label: "Settings", href: "/admin/settings", icon: Settings, exact: false },
 ]
 
