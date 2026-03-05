@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, Clock, CheckCircle, XCircle } from "lucide-react";
 
 // Inner component that uses useSearchParams
 function LoginForm() {
@@ -16,13 +16,16 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [approvalStatus, setApprovalStatus] = useState<"pending" | "rejected" | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/admin";
+  const registered = searchParams.get("registered") === "true";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+    setApprovalStatus(null);
     
     if (!email || !password) {
       setError("Please enter both email and password");
@@ -39,7 +42,14 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        // Check for specific error messages
+        if (result.error.includes("pending approval")) {
+          setApprovalStatus("pending");
+        } else if (result.error.includes("rejected")) {
+          setApprovalStatus("rejected");
+        } else {
+          setError("Invalid email or password");
+        }
       } else {
         router.push(callbackUrl);
         router.refresh();
@@ -61,6 +71,36 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Registration Success Message */}
+        {registered && (
+          <Alert className="mb-4 bg-green-500/10 border-green-500/20">
+            <CheckCircle className="h-4 w-4 text-green-500" />
+            <AlertDescription className="text-sm text-green-500">
+              Registration successful! Please wait for admin approval.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Pending Approval Message */}
+        {approvalStatus === "pending" && (
+          <Alert className="mb-4 bg-yellow-500/10 border-yellow-500/20">
+            <Clock className="h-4 w-4 text-yellow-500" />
+            <AlertDescription className="text-sm text-yellow-500">
+              Your account is pending approval. You&apos;ll be able to log in once an administrator approves your account.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Rejected Account Message */}
+        {approvalStatus === "rejected" && (
+          <Alert variant="destructive" className="mb-4">
+            <XCircle className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              Your registration was rejected. Please contact support for assistance.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
@@ -75,6 +115,7 @@ function LoginForm() {
               required
               disabled={isLoading}
               className="w-full"
+              autoComplete="email"
             />
           </div>
           
@@ -91,6 +132,7 @@ function LoginForm() {
               required
               disabled={isLoading}
               className="w-full"
+              autoComplete="current-password"
             />
           </div>
           
