@@ -42,6 +42,13 @@ enum UserRole {
   VIEWER
 }
 
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  SUSPENDED
+}
+
 // User model for authentication and admin access
 model User {
   id            String    @id @default(cuid())
@@ -49,6 +56,7 @@ model User {
   name          String
   passwordHash  String
   role          UserRole  @default(EDITOR)
+  status        UserStatus @default(PENDING)
   image         String?
   emailVerified Boolean   @default(false)
   emailVerifiedAt DateTime?
@@ -426,3 +434,4 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
