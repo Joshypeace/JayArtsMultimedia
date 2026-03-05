@@ -129,8 +129,8 @@ export default function Footer() {
           <p className="text-foreground/60 text-sm">© {currentYear} JayArts Multimedia. All rights reserved.</p>
           <div className="flex gap-6">
   {[
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
   ].map((item) => (
     <motion.div
       key={item.label} // <-- FIX HERE
