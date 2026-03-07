@@ -10,7 +10,8 @@ import {
   TrendingUp,
   Mail,
   Clock,
-  UserCheck
+  UserCheck,
+  ChevronRight,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
@@ -212,7 +213,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+      <div className="p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-foreground/60">Loading dashboard...</p>
@@ -223,13 +224,13 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="p-8">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6">
-          <h2 className="text-xl font-bold mb-2 text-red-400">Error Loading Dashboard</h2>
-          <p className="text-foreground/70">{error}</p>
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold mb-2 text-red-400">Error Loading Dashboard</h2>
+          <p className="text-foreground/70 text-sm sm:text-base">{error}</p>
           <button
             onClick={fetchDashboardData}
-            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm sm:text-base"
           >
             Try Again
           </button>
@@ -239,119 +240,164 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-8 space-y-8">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-        <p className="text-foreground/60">Welcome back! Here&apos;s your business overview.</p>
-      </motion.div>
+    <div className="min-h-screen bg-background">
+     
+      <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">Dashboard</h1>
+          <p className="text-foreground/60 text-sm sm:text-base">Welcome back! Here&apos;s your business overview.</p>
+        </motion.div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-        {statsConfig.map((stat, idx) => {
-          const Icon = stat.icon
-          const value = stats[stat.key as keyof StatsData]
-          const displayValue = stat.key === "revenue" 
-            ? `MK${value.toLocaleString()}` 
-            : value.toString()
+        {/* Stats Grid - Responsive columns */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
+          {statsConfig.map((stat, idx) => {
+            const Icon = stat.icon
+            const value = stats[stat.key as keyof StatsData]
+            const displayValue = stat.key === "revenue" 
+              ? `MK${value.toLocaleString()}` 
+              : value.toString()
 
-          return (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              className="bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-colors"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="text-foreground/60 text-xs font-medium mb-1">{stat.label}</p>
-                  <p className="text-2xl font-bold">{displayValue}</p>
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="bg-card border border-border rounded-lg p-3 sm:p-4 hover:border-primary/50 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-foreground/60 text-xs font-medium mb-1 truncate">{stat.label}</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold truncate">{displayValue}</p>
+                  </div>
+                  <div
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br ${stat.color} to-primary/20 flex items-center justify-center flex-shrink-0 ml-2`}
+                  >
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  </div>
                 </div>
-                <div
-                  className={`w-10 h-10 rounded-lg bg-gradient-to-br ${stat.color} to-primary/20 flex items-center justify-center flex-shrink-0 ml-2`}
-                >
-                  <Icon className="w-5 h-5 text-primary" />
-                </div>
-              </div>
-            </motion.div>
-          )
-        })}
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-card border border-border rounded-xl p-6"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Recent Bookings</h2>
-          {recentBookings.length > 0 && (
-            <a 
-              href="/admin/bookings" 
-              className="text-primary hover:underline text-sm font-medium flex items-center gap-1"
-            >
-              View All
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
-          )}
+              </motion.div>
+            )
+          })}
         </div>
 
-        {recentBookings.length === 0 ? (
-          <div className="text-center py-12">
-            <Calendar className="w-12 h-12 text-foreground/20 mx-auto mb-4" />
-            <p className="text-foreground/60">No recent bookings</p>
-            <p className="text-foreground/40 text-sm mt-2">New bookings will appear here</p>
+        {/* Recent Bookings - Mobile Optimized */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-card border border-border rounded-xl p-4 sm:p-6"
+        >
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold">Recent Bookings</h2>
+            {recentBookings.length > 0 && (
+              <a 
+                href="/admin/bookings" 
+                className="text-primary hover:underline text-xs sm:text-sm font-medium flex items-center gap-1"
+              >
+                <span className="hidden xs:inline">View All</span>
+                <span className="xs:hidden">All</span>
+                <ChevronRight className="w-4 h-4" />
+              </a>
+            )}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-foreground/60">Client</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-foreground/60">Service</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-foreground/60">Date</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-foreground/60">Budget</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-foreground/60">Status</th>
-                </tr>
-              </thead>
-              <tbody>
+
+          {recentBookings.length === 0 ? (
+            <div className="text-center py-8 sm:py-12">
+              <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-foreground/20 mx-auto mb-3 sm:mb-4" />
+              <p className="text-foreground/60 text-sm sm:text-base">No recent bookings</p>
+              <p className="text-foreground/40 text-xs sm:text-sm mt-1 sm:mt-2">New bookings will appear here</p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile Card View (hidden on larger screens) */}
+              <div className="block md:hidden space-y-3">
                 {recentBookings.map((booking) => (
-                  <tr 
-                    key={booking.id} 
-                    className="border-b border-border/50 hover:bg-primary/5 transition-colors cursor-pointer"
+                  <div
+                    key={booking.id}
                     onClick={() => window.location.href = `/admin/bookings/${booking.id}`}
+                    className="bg-primary/5 rounded-lg p-4 space-y-3 cursor-pointer hover:bg-primary/10 transition-colors border border-border/50"
                   >
-                    <td className="py-4 px-4">
-                      <div>
-                        <p className="font-medium">{booking.clientName}</p>
-                        <p className="text-xs text-foreground/60">{booking.clientEmail}</p>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{booking.clientName}</p>
+                        <p className="text-xs text-foreground/60 truncate">{booking.clientEmail}</p>
                       </div>
-                    </td>
-                    <td className="py-4 px-4 text-foreground/70 text-sm">
-                      {getServiceDisplay(booking)}
-                    </td>
-                    <td className="py-4 px-4 text-foreground/70 text-sm">
-                      {formatDate(booking.eventDate)}
-                    </td>
-                    <td className="py-4 px-4 text-foreground/70 font-medium">
-                      {formatCurrency(booking.budget)}
-                    </td>
-                    <td className="py-4 px-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[booking.status]}`}
+                        className={`px-2 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ml-2 ${statusColors[booking.status]}`}
                       >
                         {statusLabels[booking.status]}
                       </span>
-                    </td>
-                  </tr>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-foreground/60">Service</p>
+                        <p className="font-medium truncate">{getServiceDisplay(booking)}</p>
+                      </div>
+                      <div>
+                        <p className="text-foreground/60">Date</p>
+                        <p className="font-medium">{formatDate(booking.eventDate)}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-foreground/60">Budget</p>
+                        <p className="font-medium">{formatCurrency(booking.budget)}</p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </motion.div>
+              </div>
+
+              {/* Tablet/Desktop Table View (hidden on mobile) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full min-w-[600px] lg:min-w-0">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-3 px-4 text-xs sm:text-sm font-semibold text-foreground/60">Client</th>
+                      <th className="text-left py-3 px-4 text-xs sm:text-sm font-semibold text-foreground/60">Service</th>
+                      <th className="text-left py-3 px-4 text-xs sm:text-sm font-semibold text-foreground/60">Date</th>
+                      <th className="text-left py-3 px-4 text-xs sm:text-sm font-semibold text-foreground/60">Budget</th>
+                      <th className="text-left py-3 px-4 text-xs sm:text-sm font-semibold text-foreground/60">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentBookings.map((booking) => (
+                      <tr 
+                        key={booking.id} 
+                        className="border-b border-border/50 hover:bg-primary/5 transition-colors cursor-pointer"
+                        onClick={() => window.location.href = `/admin/bookings/${booking.id}`}
+                      >
+                        <td className="py-3 sm:py-4 px-4">
+                          <div>
+                            <p className="font-medium text-sm">{booking.clientName}</p>
+                            <p className="text-xs text-foreground/60 truncate max-w-[150px] lg:max-w-none">{booking.clientEmail}</p>
+                          </div>
+                        </td>
+                        <td className="py-3 sm:py-4 px-4 text-foreground/70 text-xs sm:text-sm">
+                          {getServiceDisplay(booking)}
+                        </td>
+                        <td className="py-3 sm:py-4 px-4 text-foreground/70 text-xs sm:text-sm whitespace-nowrap">
+                          {formatDate(booking.eventDate)}
+                        </td>
+                        <td className="py-3 sm:py-4 px-4 text-foreground/70 font-medium text-xs sm:text-sm whitespace-nowrap">
+                          {formatCurrency(booking.budget)}
+                        </td>
+                        <td className="py-3 sm:py-4 px-4">
+                          <span
+                            className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${statusColors[booking.status]}`}
+                          >
+                            {statusLabels[booking.status]}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </motion.div>
+      </div>
     </div>
   )
 }
