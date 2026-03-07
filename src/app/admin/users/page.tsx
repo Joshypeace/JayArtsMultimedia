@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { 
@@ -17,10 +17,10 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  UserCog
+  UserCog,
+  X
 } from "lucide-react"
 import Link from "next/link"
-import { useCallback as useReactCallback } from 'react'
 
 interface User {
   id: string
@@ -52,13 +52,20 @@ interface Stats {
   verifiedUsers: number
 }
 
-const roleColors = {
+interface NewUserForm {
+  name: string
+  email: string
+  password: string
+  role: string
+}
+
+const roleColors: Record<string, string> = {
   ADMIN: "bg-purple-500/10 text-purple-500",
   EDITOR: "bg-blue-500/10 text-blue-500",
   VIEWER: "bg-green-500/10 text-green-500"
 }
 
-const roleLabels = {
+const roleLabels: Record<string, string> = {
   ADMIN: "Admin",
   EDITOR: "Editor",
   VIEWER: "Viewer"
@@ -76,14 +83,14 @@ export default function ManageUsers() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [stats, setStats] = useState<Stats | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [newUser, setNewUser] = useState({
+  const [newUser, setNewUser] = useState<NewUserForm>({
     name: "",
     email: "",
     password: "",
     role: "VIEWER"
   })
 
-  const fetchUsers = useReactCallback(async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
@@ -106,7 +113,7 @@ export default function ManageUsers() {
     }
   }, [selectedRole, selectedStatus, searchTerm])
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/users/stats')
       const data = await response.json()
@@ -116,12 +123,12 @@ export default function ManageUsers() {
     } catch (err) {
       console.error("Failed to load stats:", err)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchUsers()
     fetchStats()
-  }, [selectedRole, selectedStatus, searchTerm, fetchUsers])
+  }, [fetchUsers, fetchStats])
 
   const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -251,34 +258,37 @@ export default function ManageUsers() {
 
   if (loading) {
     return (
-      <div className="p-8 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-foreground/60">Loading users...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">User Management</h1>
-            <p className="text-foreground/60">Manage system users and permissions</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">User Management</h1>
+            <p className="text-foreground/60 text-sm sm:text-base">Manage system users and permissions</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={() => fetchUsers()}
               className="p-2 hover:bg-primary/10 rounded-lg transition-colors"
               title="Refresh"
             >
-              <RefreshCw size={20} />
+              <RefreshCw size={18} className="sm:w-5 sm:h-5" />
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90 transition-all w-full sm:w-auto justify-center text-sm sm:text-base"
             >
-              <UserPlus size={20} />
+              <UserPlus size={18} className="sm:w-5 sm:h-5" />
               Add User
             </button>
           </div>
@@ -290,51 +300,51 @@ export default function ManageUsers() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"
         >
-          <div className="bg-card border border-border rounded-xl p-6">
+          <div className="bg-card border border-border rounded-lg sm:rounded-xl p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground/60 mb-1">Total Users</p>
-                <p className="text-3xl font-bold">{stats.total}</p>
+                <p className="text-xs sm:text-sm text-foreground/60 mb-1">Total</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold">{stats.total}</p>
               </div>
-              <Users className="w-8 h-8 text-primary/40" />
+              <Users className="w-6 h-6 sm:w-8 sm:h-8 text-primary/40" />
             </div>
           </div>
-          <div className="bg-card border border-border rounded-xl p-6">
+          <div className="bg-card border border-border rounded-lg sm:rounded-xl p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground/60 mb-1">Admins</p>
-                <p className="text-3xl font-bold text-purple-500">{stats.byRole?.ADMIN || 0}</p>
+                <p className="text-xs sm:text-sm text-foreground/60 mb-1">Admins</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-500">{stats.byRole?.ADMIN || 0}</p>
               </div>
-              <Shield className="w-8 h-8 text-purple-500/40" />
+              <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500/40" />
             </div>
           </div>
-          <div className="bg-card border border-border rounded-xl p-6">
+          <div className="bg-card border border-border rounded-lg sm:rounded-xl p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground/60 mb-1">Editors</p>
-                <p className="text-3xl font-bold text-blue-500">{stats.byRole?.EDITOR || 0}</p>
+                <p className="text-xs sm:text-sm text-foreground/60 mb-1">Editors</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500">{stats.byRole?.EDITOR || 0}</p>
               </div>
-              <UserCog className="w-8 h-8 text-blue-500/40" />
+              <UserCog className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500/40" />
             </div>
           </div>
-          <div className="bg-card border border-border rounded-xl p-6">
+          <div className="bg-card border border-border rounded-lg sm:rounded-xl p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground/60 mb-1">Active (30d)</p>
-                <p className="text-3xl font-bold text-green-500">{stats.activeUsers}</p>
+                <p className="text-xs sm:text-sm text-foreground/60 mb-1">Active</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-green-500">{stats.activeUsers}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-500/40" />
+              <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-500/40" />
             </div>
           </div>
-          <div className="bg-card border border-border rounded-xl p-6">
+          <div className="bg-card border border-border rounded-lg sm:rounded-xl p-3 sm:p-6 col-span-2 sm:col-span-1">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground/60 mb-1">Verified</p>
-                <p className="text-3xl font-bold">{stats.verifiedUsers}</p>
+                <p className="text-xs sm:text-sm text-foreground/60 mb-1">Verified</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold">{stats.verifiedUsers}</p>
               </div>
-              <Mail className="w-8 h-8 text-primary/40" />
+              <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-primary/40" />
             </div>
           </div>
         </motion.div>
@@ -342,94 +352,223 @@ export default function ManageUsers() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-          <p className="text-red-400">{error}</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 sm:p-4"
+        >
+          <p className="text-red-400 text-sm sm:text-base">{error}</p>
+        </motion.div>
       )}
 
       {/* Filters */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-xl p-6 space-y-4"
+        className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4"
       >
-        <div className="flex items-center gap-4">
-          <Filter size={20} className="text-foreground/60" />
-          <h3 className="font-medium">Filter Users</h3>
+        <div className="flex items-center gap-2">
+          <Filter size={18} className="text-foreground/60 sm:w-5 sm:h-5" />
+          <h3 className="font-medium text-sm sm:text-base">Filter Users</h3>
         </div>
 
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[300px]">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/40" size={18} />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/40" size={16} />
               <input
                 type="text"
                 placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
+                className="w-full pl-9 sm:pl-10 pr-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
               />
             </div>
           </div>
           
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
-          >
-            <option value="ALL">All Roles</option>
-            <option value="ADMIN">Admins</option>
-            <option value="EDITOR">Editors</option>
-            <option value="VIEWER">Viewers</option>
-          </select>
+          <div className="flex flex-wrap gap-2">
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
+            >
+              <option value="ALL">All Roles</option>
+              <option value="ADMIN">Admins</option>
+              <option value="EDITOR">Editors</option>
+              <option value="VIEWER">Viewers</option>
+            </select>
 
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
         </div>
 
         {/* Bulk Actions */}
         {selectedIds.length > 0 && (
-          <div className="flex items-center gap-4 pt-4 border-t border-border">
-            <span className="text-sm text-foreground/60">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 pt-4 border-t border-border">
+            <span className="text-xs sm:text-sm text-foreground/60">
               {selectedIds.length} selected
             </span>
-            <button
-              onClick={() => handleBulkAction('verify')}
-              className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20"
-            >
-              Verify Email
-            </button>
-            <button
-              onClick={() => handleBulkAction('delete')}
-              className="px-3 py-1 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20"
-            >
-              Delete
-            </button>
-            <button
-              onClick={() => setSelectedIds([])}
-              className="px-3 py-1 border border-border rounded-lg hover:border-primary"
-            >
-              Clear
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => handleBulkAction('verify')}
+                className="px-2 sm:px-3 py-1 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500/20 text-xs sm:text-sm"
+              >
+                Verify Email
+              </button>
+              <button
+                onClick={() => handleBulkAction('delete')}
+                className="px-2 sm:px-3 py-1 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 text-xs sm:text-sm"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="px-2 sm:px-3 py-1 border border-border rounded-lg hover:border-primary text-xs sm:text-sm"
+              >
+                Clear
+              </button>
+            </div>
           </div>
         )}
       </motion.div>
 
-      {/* Users Table */}
+      {/* Users List - Responsive Cards for Mobile, Table for Desktop */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-card border border-border rounded-xl overflow-hidden"
       >
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        {/* Mobile View - Cards (hidden on md and up) */}
+        <div className="block md:hidden p-4 space-y-4">
+          {users.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-foreground/60">No users found</p>
+              <p className="text-foreground/40 text-sm mt-2">
+                {searchTerm || selectedRole !== "ALL" || selectedStatus !== "all"
+                  ? "Try adjusting your filters"
+                  : "Add your first user to get started"}
+              </p>
+            </div>
+          ) : (
+            users.map((user) => (
+              <div key={user.id} className="bg-primary/5 rounded-lg p-4 space-y-3 border border-border/50">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(user.id)}
+                      onChange={() => toggleSelect(user.id)}
+                      className="mt-1 rounded border-border"
+                    />
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {user.image ? (
+                          <Image src={user.image} alt={user.name} width={40} height={40} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-lg font-bold text-primary">
+                            {user.name.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{user.name}</p>
+                        <p className="text-xs text-foreground/60 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <p className="text-foreground/60">Role</p>
+                    <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full mt-1 ${roleColors[user.role]}`}>
+                      {roleLabels[user.role]}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-foreground/60">Status</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      {user.emailVerified ? (
+                        <CheckCircle size={12} className="text-green-500" />
+                      ) : (
+                        <XCircle size={12} className="text-yellow-500" />
+                      )}
+                      <span className="text-xs">
+                        {user.emailVerified ? "Verified" : "Unverified"}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-foreground/60">Last Active</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Clock size={10} className="text-foreground/60" />
+                      <span className="text-xs">
+                        {user.isActive ? (
+                          <span className="text-green-500">Active</span>
+                        ) : (
+                          formatDate(user.lastLogin)
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-foreground/60">Joined</p>
+                    <p className="text-xs">{formatDate(user.createdAt)}</p>
+                  </div>
+                </div>
+
+                <div className="border-t border-border/50 pt-2">
+                  <p className="text-xs text-foreground/60 mb-2">Content</p>
+                  <div className="flex gap-3 text-xs">
+                    <span>📝 {user._count.blogPosts}</span>
+                    <span>🖼️ {user._count.portfolioItems}</span>
+                    <span>⚙️ {user._count.services}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Link
+                    href={`/admin/users/${user.id}`}
+                    className="flex-1 flex items-center justify-center gap-1 p-2 hover:bg-primary/10 rounded-lg transition-colors text-xs"
+                  >
+                    <Eye size={14} />
+                    View
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setSelectedUser(user)
+                      setShowEditModal(true)
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1 p-2 hover:bg-primary/10 rounded-lg transition-colors text-xs"
+                  >
+                    <Edit2 size={14} />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteUser(user.id)}
+                    className="flex-1 flex items-center justify-center gap-1 p-2 hover:bg-red-500/10 rounded-lg transition-colors text-xs"
+                    disabled={user.role === 'ADMIN'}
+                  >
+                    <Trash2 size={14} className={user.role === 'ADMIN' ? 'text-red-400/40' : 'text-red-400'} />
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View - Table (hidden on mobile, shown on md and up) */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full min-w-[1000px] lg:min-w-0">
             <thead>
               <tr className="border-b border-border bg-background/50">
                 <th className="py-4 px-6 w-12">
@@ -440,13 +579,13 @@ export default function ManageUsers() {
                     className="rounded border-border"
                   />
                 </th>
-                <th className="text-left py-4 px-6 font-semibold">User</th>
-                <th className="text-left py-4 px-6 font-semibold">Role</th>
-                <th className="text-left py-4 px-6 font-semibold">Status</th>
-                <th className="text-left py-4 px-6 font-semibold">Last Active</th>
-                <th className="text-left py-4 px-6 font-semibold">Joined</th>
-                <th className="text-left py-4 px-6 font-semibold">Content</th>
-                <th className="text-left py-4 px-6 font-semibold">Actions</th>
+                <th className="text-left py-4 px-6 font-semibold text-sm">User</th>
+                <th className="text-left py-4 px-6 font-semibold text-sm">Role</th>
+                <th className="text-left py-4 px-6 font-semibold text-sm">Status</th>
+                <th className="text-left py-4 px-6 font-semibold text-sm">Last Active</th>
+                <th className="text-left py-4 px-6 font-semibold text-sm">Joined</th>
+                <th className="text-left py-4 px-6 font-semibold text-sm">Content</th>
+                <th className="text-left py-4 px-6 font-semibold text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -468,7 +607,7 @@ export default function ManageUsers() {
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                         {user.image ? (
                           <Image src={user.image} alt={user.name} width={40} height={40} className="w-full h-full object-cover" />
                         ) : (
@@ -477,11 +616,11 @@ export default function ManageUsers() {
                           </span>
                         )}
                       </div>
-                      <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-foreground/60 flex items-center gap-1">
-                          <Mail size={12} />
-                          {user.email}
+                      <div className="min-w-0">
+                        <div className="font-medium text-sm truncate max-w-[200px]">{user.name}</div>
+                        <div className="text-xs text-foreground/60 flex items-center gap-1">
+                          <Mail size={10} className="flex-shrink-0" />
+                          <span className="truncate max-w-[180px]">{user.email}</span>
                         </div>
                       </div>
                     </div>
@@ -494,9 +633,9 @@ export default function ManageUsers() {
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       {user.emailVerified ? (
-                        <CheckCircle size={16} className="text-green-500" />
+                        <CheckCircle size={16} className="text-green-500 flex-shrink-0" />
                       ) : (
-                        <XCircle size={16} className="text-yellow-500" />
+                        <XCircle size={16} className="text-yellow-500 flex-shrink-0" />
                       )}
                       <span className="text-sm">
                         {user.emailVerified ? "Verified" : "Unverified"}
@@ -505,8 +644,8 @@ export default function ManageUsers() {
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
-                      <Clock size={14} className="text-foreground/60" />
-                      <span className="text-sm">
+                      <Clock size={14} className="text-foreground/60 flex-shrink-0" />
+                      <span className="text-sm whitespace-nowrap">
                         {user.isActive ? (
                           <span className="text-green-500">Active</span>
                         ) : (
@@ -515,7 +654,7 @@ export default function ManageUsers() {
                       </span>
                     </div>
                   </td>
-                  <td className="py-4 px-6 text-sm text-foreground/70">
+                  <td className="py-4 px-6 text-sm text-foreground/70 whitespace-nowrap">
                     {formatDate(user.createdAt)}
                   </td>
                   <td className="py-4 px-6">
@@ -560,8 +699,9 @@ export default function ManageUsers() {
           </table>
         </div>
 
+        {/* Empty State for Desktop */}
         {users.length === 0 && (
-          <div className="text-center py-12">
+          <div className="hidden md:block text-center py-12">
             <p className="text-foreground/60">No users found</p>
             <p className="text-foreground/40 text-sm mt-2">
               {searchTerm || selectedRole !== "ALL" || selectedStatus !== "all"
@@ -572,16 +712,24 @@ export default function ManageUsers() {
         )}
       </motion.div>
 
-      {/* Add User Modal */}
+      {/* Add User Modal - Responsive */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-background border border-border rounded-xl max-w-md w-full"
+            className="bg-background border border-border rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
           >
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-6">Add New User</h2>
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold">Add New User</h2>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="p-1 text-foreground/60 hover:text-foreground"
+                >
+                  <X size={20} className="sm:w-6 sm:h-6" />
+                </button>
+              </div>
               
               <form onSubmit={handleCreateUser} className="space-y-4">
                 <div>
@@ -590,7 +738,7 @@ export default function ManageUsers() {
                     type="text"
                     value={newUser.name}
                     onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                    className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
+                    className="w-full px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
                     required
                   />
                 </div>
@@ -601,7 +749,7 @@ export default function ManageUsers() {
                     type="email"
                     value={newUser.email}
                     onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                    className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
+                    className="w-full px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
                     required
                   />
                 </div>
@@ -612,7 +760,7 @@ export default function ManageUsers() {
                     type="password"
                     value={newUser.password}
                     onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                    className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
+                    className="w-full px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
                     required
                     minLength={8}
                   />
@@ -624,7 +772,7 @@ export default function ManageUsers() {
                   <select
                     value={newUser.role}
                     onChange={(e) => setNewUser({...newUser, role: e.target.value})}
-                    className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
+                    className="w-full px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
                   >
                     <option value="VIEWER">Viewer</option>
                     <option value="EDITOR">Editor</option>
@@ -632,17 +780,17 @@ export default function ManageUsers() {
                   </select>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <button
                     type="submit"
-                    className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90"
+                    className="w-full sm:flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90 text-sm sm:text-base"
                   >
                     Create User
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowAddModal(false)}
-                    className="flex-1 py-2 border border-border rounded-lg hover:border-primary"
+                    className="w-full sm:flex-1 py-2 border border-border rounded-lg hover:border-primary text-sm sm:text-base"
                   >
                     Cancel
                   </button>
@@ -653,16 +801,27 @@ export default function ManageUsers() {
         </div>
       )}
 
-      {/* Edit User Modal */}
+      {/* Edit User Modal - Responsive */}
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-background border border-border rounded-xl max-w-md w-full"
+            className="bg-background border border-border rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
           >
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-6">Edit User</h2>
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold">Edit User</h2>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false)
+                    setSelectedUser(null)
+                  }}
+                  className="p-1 text-foreground/60 hover:text-foreground"
+                >
+                  <X size={20} className="sm:w-6 sm:h-6" />
+                </button>
+              </div>
               
               <form onSubmit={(e) => {
                 e.preventDefault()
@@ -681,7 +840,7 @@ export default function ManageUsers() {
                     type="text"
                     name="name"
                     defaultValue={selectedUser.name}
-                    className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
+                    className="w-full px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
                     required
                   />
                 </div>
@@ -692,7 +851,7 @@ export default function ManageUsers() {
                     type="email"
                     value={selectedUser.email}
                     disabled
-                    className="w-full px-4 py-2 bg-input/50 border border-border rounded-lg cursor-not-allowed"
+                    className="w-full px-3 sm:px-4 py-2 bg-input/50 border border-border rounded-lg cursor-not-allowed text-sm sm:text-base"
                   />
                   <p className="text-xs text-foreground/60 mt-1">Email cannot be changed</p>
                 </div>
@@ -702,7 +861,7 @@ export default function ManageUsers() {
                   <select
                     name="role"
                     defaultValue={selectedUser.role}
-                    className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
+                    className="w-full px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
                   >
                     <option value="VIEWER">Viewer</option>
                     <option value="EDITOR">Editor</option>
@@ -715,17 +874,17 @@ export default function ManageUsers() {
                   <select
                     name="emailVerified"
                     defaultValue={selectedUser.emailVerified ? "true" : "false"}
-                    className="w-full px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary"
+                    className="w-full px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"
                   >
                     <option value="true">Verified</option>
                     <option value="false">Unverified</option>
                   </select>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <button
                     type="submit"
-                    className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90"
+                    className="w-full sm:flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-opacity-90 text-sm sm:text-base"
                   >
                     Update User
                   </button>
@@ -735,7 +894,7 @@ export default function ManageUsers() {
                       setShowEditModal(false)
                       setSelectedUser(null)
                     }}
-                    className="flex-1 py-2 border border-border rounded-lg hover:border-primary"
+                    className="w-full sm:flex-1 py-2 border border-border rounded-lg hover:border-primary text-sm sm:text-base"
                   >
                     Cancel
                   </button>
@@ -748,4 +907,3 @@ export default function ManageUsers() {
     </div>
   )
 }
-
