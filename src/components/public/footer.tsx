@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 
 import Link from "next/link"
@@ -40,15 +41,23 @@ export default function Footer() {
           viewport={{ once: true }}
         >
           {/* Brand */}
-          <motion.div variants={itemVariants}>
+         <motion.div variants={itemVariants}>
             <div className="flex items-center gap-2 mb-4">
               <motion.div
-                className="w-8 h-8 bg-primary rounded-full"
-                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 300 }}
-              />
-              <span className="text-primary font-bold text-lg">JayArts</span>
+              >
+                <img
+                  src="/Jayarts.png"
+                  alt="JayArts Logo"
+                  width={100}
+                  height={100}
+                  className="object-contain"
+                />
+              </motion.div>
+          
             </div>
+          
             <p className="text-foreground/60 text-sm">
               Professional multimedia agency creating cinematic visual experiences.
             </p>
