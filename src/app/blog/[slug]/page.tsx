@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation"
-import { Calendar, Clock, User, Tag, Share2, ArrowLeft, Eye } from "lucide-react"
+import { Calendar, Clock, User, Tag, ArrowLeft, Eye } from "lucide-react"
 import PublicNavBar from "@/components/public/navbar"
 import Footer from "@/components/public/footer"
 import Link from "next/link"
 import Image from "next/image"
 import { prisma } from "@/lib/prisma"
+import { siX, siFacebook, siLinkerd } from "simple-icons/icons";
+
 
 interface BlogPost {
   id: string
@@ -236,45 +238,56 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           {/* Share Section */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-6 border-t border-border">
             <div>
-              <p className="text-foreground/60 text-sm mb-2">Share this article</p>
-              <div className="flex gap-3">
-                {[
-                  {
-                    name: "Twitter",
-                    url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                      post.title
-                    )}&url=${encodeURIComponent(
-                      `https://yourdomain.com/blog/${post.slug}`
-                    )}`,
-                  },
-                  {
-                    name: "Facebook",
-                    url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                      `https://yourdomain.com/blog/${post.slug}`
-                    )}`,
-                  },
-                  {
-                    name: "LinkedIn",
-                    url: `https://www.linkedin.com/shareArticle?mini=true&title=${encodeURIComponent(
-                      post.title
-                    )}&url=${encodeURIComponent(
-                      `https://yourdomain.com/blog/${post.slug}`
-                    )}`,
-                  },
-                ].map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 hover:border-primary transition-colors"
+            <p className="text-foreground/60 text-sm mb-2">Share this article</p>
+          
+            <div className="flex gap-3">
+              {[
+                {
+                  name: "Twitter",
+                  icon: siX,
+                  url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                    post.title
+                  )}&url=${encodeURIComponent(
+                    `https://yourdomain.com/blog/${post.slug}`
+                  )}`,
+                },
+                {
+                  name: "Facebook",
+                  icon: siFacebook,
+                  url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                    `https://yourdomain.com/blog/${post.slug}`
+                  )}`,
+                },
+                {
+                  name: "LinkedIn",
+                  icon: siLinkerd,
+                  url: `https://www.linkedin.com/shareArticle?mini=true&title=${encodeURIComponent(
+                    post.title
+                  )}&url=${encodeURIComponent(
+                    `https://yourdomain.com/blog/${post.slug}`
+                  )}`,
+                },
+              ].map((social) => (
+                <a
+                  key={social.name}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 hover:border-primary transition-colors"
+                >
+                  <svg
+                    role="img"
+                    viewBox="0 0 24 24"
+                    className="w-4 h-4"
+                    fill={`#${social.icon.hex}`}
                   >
-                    <Share2 size={16} className="text-primary" />
-                  </a>
-                ))}
-              </div>
+                    <path d={social.icon.path} />
+                  </svg>
+                </a>
+              ))}
             </div>
-
+          </div>
+          
             <div className="text-sm text-foreground/60">
               <p>Last updated: {formatDate(post.updatedAt)}</p>
             </div>
