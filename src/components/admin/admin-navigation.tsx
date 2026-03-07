@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link"
@@ -72,13 +73,17 @@ const SidebarContent = ({
   <div className="flex-1 flex flex-col p-6 overflow-y-auto">
     {/* Logo */}
     <div className={`flex items-center gap-3 mb-6 ${isCollapsed ? "justify-center" : ""}`}>
-      <div className="w-8 h-8 bg-gradient-to-br from-primary to-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-        <Camera size={18} className="text-white" />
+      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
       </div>
       {!isCollapsed && (
         <div>
-          <span className="font-bold text-primary block leading-tight">JayArts</span>
-          <span className="text-xs text-muted-foreground">Admin Panel</span>
+          <img
+                  src="/Jayarts.png"
+                  alt="JayArts Logo"
+                  width={100}
+                  height={100}
+                  className="object-contain"
+                />
         </div>
       )}
     </div>
