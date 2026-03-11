@@ -48,6 +48,20 @@ const services = [
     ],
     details: "Transform your brand identity with our comprehensive graphic design solutions. From logo design and brand development to marketing materials and digital assets, we create cohesive visual identities that communicate your brand's essence and leave lasting impressions on your target audience.",
   },
+  {
+    title: "Live Streaming",
+    description: "Professional live streaming for events, conferences, and online content",
+    image: "/service-live-streaming.jpg",
+    deliverables: [
+      "Multi-camera setup",
+      "Professional audio",
+      "Real-time graphics",
+      "Stream to multiple platforms",
+      "Recording included",
+      "Technical support",
+    ],
+    details: "Reach a global audience with our professional live streaming services. Whether it's corporate conferences, live events, product launches, or online content, we provide high-quality multi-camera setups, professional audio, and real-time graphics to deliver an engaging broadcast experience that connects with viewers wherever they are.",
+  },
 ]
 
 export default function Services() {
@@ -121,7 +135,7 @@ export default function Services() {
                     viewport={{ once: true }}
                     className={`${serviceIdx % 2 === 1 ? "md:order-1" : ""}`}
                   >
-                    <h2 className="text-4xl sm:text-4xl md:text-5xl font-bold mb-4 text-primary">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-primary">
                       {service.title}
                     </h2>
                     <p className="text-lg sm:text-xl text-foreground/80 mb-6 leading-relaxed">
