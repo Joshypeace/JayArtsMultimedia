@@ -17,7 +17,8 @@ const eventTypes = [
   "Commercial Videography",
   "Brand Design",
   "Logo Design",
-  "Multi-Service Package"
+  "Multi-Service Package",
+  "Live Streaming Services",
 ]
 
 
