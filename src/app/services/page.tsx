@@ -41,9 +41,10 @@ const services = [
     deliverables: [
       "Logo files (All formats)",
       "Brand guidelines",
-      "Color palette",
-      "Typography guide",
-      "Social media templates",
+      "Posters",
+      "Banners",
+      "Flyers",
+      "Brochures",
       "Print-ready files",
     ],
     details: "Transform your brand identity with our comprehensive graphic design solutions. From logo design and brand development to marketing materials and digital assets, we create cohesive visual identities that communicate your brand's essence and leave lasting impressions on your target audience.",
