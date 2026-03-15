@@ -65,7 +65,7 @@ const teamMembers = [
 ]
 
 const values = [
-  { title: "Excellence", description: "Creativity - We bring ideas to life through innovative visual storytelling" },
+  { title: "Creativity", description: "We bring ideas to life through innovative visual storytelling" },
   { title: "Innovation", description: "Constantly pushing creative boundaries" },
   { title: "Collaboration", description: "Partnering closely with clients for success" },
   { title: "Integrity", description: "Building trust through honesty and professionalism" },
