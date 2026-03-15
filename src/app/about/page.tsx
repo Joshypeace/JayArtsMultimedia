@@ -31,7 +31,7 @@ const SocialIcon = ({
 const teamMembers = [
   {
     name: "Joel Chilapondwa",
-    role: "Creative Director",
+    role: "Founder & Creative Director",
     bio: "Visionary filmmaker with 10+ years in cinematic production",
     image: "/IMG_4769.JPEG",
     social: {
@@ -42,7 +42,7 @@ const teamMembers = [
   },
   {
     name: "Joshua Simengwa",
-    role: "Lead Photographer",
+    role: "Cinematographer & Director of Cinematography",
     bio: "Award-winning photographer specializing in luxury brands",
     image: "/jay.jpeg",
     social: {
@@ -53,7 +53,7 @@ const teamMembers = [
   },
   {
     name: "Hasheem Deza",
-    role: "Design Lead",
+    role: "Lead Photographer & Videographer",
     bio: "Brand strategist and graphic design innovator",
     image: "/Classic-6256.jpg",
     social: {
@@ -65,7 +65,7 @@ const teamMembers = [
 ]
 
 const values = [
-  { title: "Excellence", description: "We deliver premium work that exceeds expectations" },
+  { title: "Excellence", description: "Creativity - We bring ideas to life through innovative visual storytelling" },
   { title: "Innovation", description: "Constantly pushing creative boundaries" },
   { title: "Collaboration", description: "Partnering closely with clients for success" },
   { title: "Integrity", description: "Building trust through honesty and professionalism" },
@@ -134,8 +134,8 @@ export default function About() {
                 <div>
                   <h2 className="text-3xl font-bold mb-4 text-primary">Our Vision</h2>
                   <p className="text-foreground/70 leading-relaxed">
-                    To be the most trusted multimedia partner for brands seeking to make a lasting impact through
-                    photography, videography, and design that transcends expectations.
+                    To become the leading multimedia production company seeking to make a lasting impact through 
+                    photography, videography, livestreaming and graphic designs that transcend expectations.
                   </p>
                 </div>
               </div>
