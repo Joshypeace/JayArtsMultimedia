@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { adminApiGuard } from "@/lib/server-auth"
 
 export async function GET() {
   try {
+    const denied = await adminApiGuard()
+    if (denied) return denied
+
     const totalBookings = await prisma.booking.count()
     const portfolioItems = await prisma.portfolioItem.count({
       where: { publishedAt: { not: null } }

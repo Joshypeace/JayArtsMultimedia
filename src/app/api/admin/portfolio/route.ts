@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { adminApiGuard } from "@/lib/server-auth"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
 export async function GET() {
   try {
+    const denied = await adminApiGuard()
+    if (denied) return denied
+
     const portfolioItems = await prisma.portfolioItem.findMany({
       orderBy: { createdAt: 'desc' },
       include: {

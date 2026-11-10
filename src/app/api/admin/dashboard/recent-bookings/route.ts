@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { adminApiGuard } from "@/lib/server-auth"
 
 export async function GET(request: Request) {
   try {
+    const denied = await adminApiGuard()
+    if (denied) return denied
+
     const url = new URL(request.url)
     const limit = parseInt(url.searchParams.get("limit") || "5")
 
