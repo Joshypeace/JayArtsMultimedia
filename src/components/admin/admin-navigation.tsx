@@ -18,6 +18,7 @@ import {
   Home,
   User,
   FileWarning,
+  AppWindow,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -35,6 +36,7 @@ const navItems = [
   { label: "Inquiries", href: "/admin/inquiries", icon: MessageSquare, exact: false },
   { label: "Users", href: "/admin/users", icon: Users, exact: false },
   { label: "Approvals", href: "/admin/approvals", icon: FileWarning, exact: false },
+  { label: "Google App", href: "/admin/apps-script", icon: AppWindow, exact: false },
   { label: "Settings", href: "/admin/settings", icon: Settings, exact: false },
 ]
 

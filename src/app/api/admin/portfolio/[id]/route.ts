@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { adminApiGuard } from "@/lib/server-auth"
 
 export async function DELETE(
   _request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const denied = await adminApiGuard()
+    if (denied) return denied
+
     const { id } = await context.params
 
     await prisma.portfolioItem.delete({
@@ -27,6 +31,9 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const denied = await adminApiGuard()
+    if (denied) return denied
+
     const { id } = await context.params
     const data = await request.json()
 

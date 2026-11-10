@@ -43,6 +43,10 @@ export const authOptions: NextAuthOptions = {
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!valid) return null;
 
+        // Only approved accounts may sign in. New registrations are PENDING
+        // until an admin approves them; REJECTED/SUSPENDED are blocked.
+        if (user.status !== "ACTIVE") return null;
+
         return {
           id: user.id,
           email: user.email,
