@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { v2 as cloudinary } from "cloudinary"
+import { adminApiGuard } from "@/lib/server-auth"
 
 // Configure Cloudinary
 cloudinary.config({
@@ -34,6 +35,9 @@ const MAX_FILES = 20 // Maximum number of files per upload
 
 export async function POST(request: NextRequest) {
   try {
+    const denied = await adminApiGuard()
+    if (denied) return denied
+
     const formData = await request.formData()
     
     // Check if multiple files or single file
@@ -209,6 +213,9 @@ export async function POST(request: NextRequest) {
 // DELETE endpoint to remove images from Cloudinary
 export async function DELETE(request: NextRequest) {
   try {
+    const denied = await adminApiGuard()
+    if (denied) return denied
+
     const { searchParams } = new URL(request.url)
     const publicId = searchParams.get('public_id')
 
@@ -246,6 +253,9 @@ export async function DELETE(request: NextRequest) {
 // GET endpoint to list images in a folder
 export async function GET(request: NextRequest) {
   try {
+    const denied = await adminApiGuard()
+    if (denied) return denied
+
     const { searchParams } = new URL(request.url)
     const folder = searchParams.get('folder') || 'portfolio'
     const maxResults = parseInt(searchParams.get('maxResults') || '100')

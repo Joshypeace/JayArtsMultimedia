@@ -13,7 +13,7 @@ export async function proxy(request: NextRequest) {
   // Not logged in and trying to access admin routes
   if (!isLoggedIn && isAdminRoute) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
+    loginUrl.searchParams.set("callbackUrl", pathname + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);
   }
 

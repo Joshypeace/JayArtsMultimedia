@@ -1,16 +1,26 @@
 import { ExternalLink, Info } from "lucide-react"
 
-// The Google Apps Script web app shown in the admin area.
-// Override per environment with APPS_SCRIPT_URL in Vercel project settings.
-const DEFAULT_APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbwK1UtAt9X-ERouevvMHwWzLr_zK4IFnvgpnmDbAnHgWqQ4RHtVGKTSS95TbH62qj-QUg/exec"
+// The Google Apps Script web app shown in the admin area. Set APPS_SCRIPT_URL
+// in the Vercel project settings (kept out of source because the repo is public).
 
 export const metadata = {
   title: "Google App | Admin",
 }
 
 export default function AppsScriptPage() {
-  const appUrl = process.env.APPS_SCRIPT_URL || DEFAULT_APPS_SCRIPT_URL
+  const appUrl = process.env.APPS_SCRIPT_URL
+
+  if (!appUrl) {
+    return (
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">Google App</h1>
+        <p className="text-sm text-muted-foreground">
+          Not configured. Add an <code>APPS_SCRIPT_URL</code> environment variable with your
+          Apps Script web app&apos;s <code>/exec</code> URL, then redeploy.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full flex-col gap-4">
