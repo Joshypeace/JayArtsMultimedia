@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { ArrowLeft, RefreshCw } from "lucide-react"
+import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { buildAppsScriptEmbedUrl } from "@/lib/apps-script-embed"
@@ -26,6 +26,8 @@ export default async function BusinessSystemPage() {
   })
   const allowed = dbUser?.status === "ACTIVE" && dbUser.role === "ADMIN"
   const embedUrl = allowed ? buildAppsScriptEmbedUrl(dbUser.email) : null
+  // Direct Google-login link (works for the script owner only), shown to admins as a fallback.
+  const directUrl = allowed ? process.env.APPS_SCRIPT_URL : undefined
 
   const bar = (
     <header className="flex h-11 shrink-0 items-center justify-between gap-3 border-b border-border bg-sidebar px-3 sm:px-4">
@@ -36,6 +38,19 @@ export default async function BusinessSystemPage() {
         <ArrowLeft size={16} />
         <span>Back to admin</span>
       </Link>
+      <div className="flex items-center gap-1">
+      {directUrl && (
+        <a
+          href={directUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open with Google sign-in (script owner only)"
+          className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+        >
+          <ExternalLink size={15} />
+          <span className="hidden sm:inline">Google sign-in</span>
+        </a>
+      )}
       {embedUrl && (
         <a
           href="/business"
@@ -46,12 +61,13 @@ export default async function BusinessSystemPage() {
           <span className="hidden sm:inline">Reload</span>
         </a>
       )}
+      </div>
     </header>
   )
 
   if (!embedUrl) {
     return (
-      <div className="flex h-dvh flex-col bg-background">
+      <div className="flex h-screen supports-[height:100dvh]:h-dvh flex-col bg-background">
         {bar}
         <div className="flex flex-1 items-center justify-center p-6 text-center">
           <div className="max-w-md space-y-2">
@@ -74,7 +90,7 @@ export default async function BusinessSystemPage() {
   }
 
   return (
-    <div className="flex h-dvh flex-col bg-background">
+    <div className="flex h-screen supports-[height:100dvh]:h-dvh flex-col bg-background">
       {bar}
       <iframe
         key={embedUrl /* new pass => fresh frame, so back/forward never reuses a spent pass */}

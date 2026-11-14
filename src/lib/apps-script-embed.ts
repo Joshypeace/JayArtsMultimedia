@@ -1,4 +1,4 @@
-// Server-only: imported by the /admin/apps-script server component. Never import from client code.
+// Server-only: imported by the /business server component. Never import from client code.
 import { createHmac, randomBytes } from "crypto"
 
 /**
