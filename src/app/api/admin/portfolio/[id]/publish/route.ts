@@ -1,21 +1,14 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { adminApiGuard } from "@/lib/server-auth"
 
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
-    }
+    const denied = await adminApiGuard()
+    if (denied) return denied
 
     const { published, publishedAt } = await request.json()
     const { id } = await context.params
@@ -26,6 +19,7 @@ export async function PATCH(
         publishedAt: published ? publishedAt : null
       },
       include: {
+        service: { select: { name: true } },
         user: {
           select: {
             name: true,
