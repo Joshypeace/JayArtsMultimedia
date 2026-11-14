@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Clock, MailCheck } from "lucide-react";
@@ -164,9 +165,8 @@ export default function RegisterPage() {
                 <label htmlFor="password" className="text-sm font-medium">
                   Password <span className="text-red-500">*</span>
                 </label>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -195,9 +195,8 @@ export default function RegisterPage() {
                 <label htmlFor="confirmPassword" className="text-sm font-medium">
                   Confirm Password <span className="text-red-500">*</span>
                 </label>
-                <Input
+                <PasswordInput
                   id="confirmPassword"
-                  type="password"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

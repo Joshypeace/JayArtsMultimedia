@@ -4,7 +4,11 @@ import type { NextRequest } from "next/server";
 
 // Next.js 16 "proxy" (formerly middleware). Must live at src/proxy.ts to run.
 export async function proxy(request: NextRequest) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  // Pick the cookie name from what the browser actually sent. getToken() otherwise
+  // guesses from NEXTAUTH_URL, and an http:// value (e.g. copied from local .env)
+  // makes it miss the __Secure- cookie on Vercel, bouncing every admin to /login.
+  const secureCookie = request.cookies.has("__Secure-next-auth.session-token");
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie });
   const isLoggedIn = !!token;
   const { pathname } = request.nextUrl;
   const isAdminRoute = pathname.startsWith("/admin");

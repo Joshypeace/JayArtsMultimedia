@@ -18,7 +18,7 @@ export default function CallToAction() {
             Ready to Create Something <span className="text-primary">Extraordinary</span>?
           </h2>
           <p className="text-foreground/70 text-lg mb-8 max-w-2xl mx-auto">
-            Let's bring your vision to life with stunning multimedia solutions
+            Let&apos;s bring your vision to life with stunning multimedia solutions
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link
