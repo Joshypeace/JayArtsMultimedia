@@ -54,7 +54,7 @@ export default function AppsScriptPage() {
       <iframe
         src={appUrl}
         title="Google Apps Script app"
-        className="min-h-[600px] w-full flex-1 rounded-lg border border-border bg-white"
+        className="min-h-[600px] w-full flex-1 rounded-lg border border-border bg-background"
         allow="clipboard-read; clipboard-write"
       />
     </div>
