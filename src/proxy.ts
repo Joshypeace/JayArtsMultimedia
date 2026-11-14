@@ -7,7 +7,10 @@ export async function proxy(request: NextRequest) {
   // Pick the cookie name from what the browser actually sent. getToken() otherwise
   // guesses from NEXTAUTH_URL, and an http:// value (e.g. copied from local .env)
   // makes it miss the __Secure- cookie on Vercel, bouncing every admin to /login.
-  const secureCookie = request.cookies.has("__Secure-next-auth.session-token");
+  // Large sessions are split into ".0", ".1"... chunks, so match by prefix.
+  const secureCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("__Secure-next-auth.session-token"));
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie });
   const isLoggedIn = !!token;
   const { pathname } = request.nextUrl;
