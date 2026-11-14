@@ -16,7 +16,7 @@ function PasswordInput({ className, disabled, ...props }: PasswordInputProps) {
     <div className="relative">
       <Input
         type={visible ? "text" : "password"}
-        className={cn("pr-10", className)}
+        className={cn(className, "pr-10")} // pr-10 last so passed px-* classes can't remove room for the toggle
         disabled={disabled}
         {...props}
       />
