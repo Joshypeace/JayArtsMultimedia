@@ -1,23 +1,39 @@
-import { ExternalLink, Info } from "lucide-react"
+import { ExternalLink, Info, RefreshCw } from "lucide-react"
+import { auth } from "@/lib/auth"
+import { buildAppsScriptEmbedUrl } from "@/lib/apps-script-embed"
 
-// The Google Apps Script web app shown in the admin area. Set APPS_SCRIPT_URL
-// in the Vercel project settings (kept out of source because the repo is public).
+// Each render signs a fresh single-use sign-in link, so never cache this page.
+export const dynamic = "force-dynamic"
 
 export const metadata = {
   title: "Google App | Admin",
 }
 
-export default function AppsScriptPage() {
-  const appUrl = process.env.APPS_SCRIPT_URL
+export default async function AppsScriptPage() {
+  const session = await auth()
+  const embedUrl = session?.user?.email ? buildAppsScriptEmbedUrl(session.user.email) : null
+  // Direct link (Google sign-in) for opening the app outside the admin.
+  const directUrl = process.env.APPS_SCRIPT_URL
 
-  if (!appUrl) {
+  if (!embedUrl) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
         <h1 className="text-2xl font-bold">Google App</h1>
-        <p className="text-sm text-muted-foreground">
-          Not configured. Add an <code>APPS_SCRIPT_URL</code> environment variable with your
-          Apps Script web app&apos;s <code>/exec</code> URL, then redeploy.
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Not configured. Set <code>APPS_SCRIPT_EMBED_URL</code> and{" "}
+          <code>APPS_SCRIPT_EMBED_SECRET</code> in the Vercel environment variables, then redeploy.
         </p>
+        {directUrl && (
+          <a
+            href={directUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-primary/5"
+          >
+            <ExternalLink size={16} />
+            Open with Google sign-in
+          </a>
+        )}
       </div>
     )
   }
@@ -28,34 +44,45 @@ export default function AppsScriptPage() {
         <div>
           <h1 className="text-2xl font-bold">Google App</h1>
           <p className="text-sm text-muted-foreground">
-            Your Google Apps Script tool, inside the admin panel.
+            Jay Arts business system, signed in with your website account.
           </p>
         </div>
-        <a
-          href={appUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-primary/5"
-        >
-          <ExternalLink size={16} />
-          Open in new tab
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="/admin/apps-script"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-primary/5"
+          >
+            <RefreshCw size={16} />
+            Reload
+          </a>
+          {directUrl && (
+            <a
+              href={directUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-primary/5"
+            >
+              <ExternalLink size={16} />
+              Open in new tab
+            </a>
+          )}
+        </div>
       </div>
 
       <div className="flex items-start gap-2 rounded-lg bg-primary/5 p-3 text-xs text-muted-foreground">
         <Info size={14} className="mt-0.5 flex-shrink-0 text-primary" />
         <span>
-          If the frame below is blank or shows a Google sign-in error, use
-          &ldquo;Open in new tab&rdquo;. Embedding requires you to be signed in to Google in this
-          browser and the script to allow framing.
+          Access uses your website login. Your email ({session?.user?.email}) must also be Active on
+          the business system&apos;s Users sheet. If you see &ldquo;session expired&rdquo;, click Reload.
         </span>
       </div>
 
       <iframe
-        src={appUrl}
-        title="Google Apps Script app"
+        src={embedUrl}
+        title="Jay Arts business system"
         className="min-h-[600px] w-full flex-1 rounded-lg border border-border bg-background"
         allow="clipboard-read; clipboard-write"
+        referrerPolicy="no-referrer"
       />
     </div>
   )

@@ -26,6 +26,7 @@ function PasswordInput({ className, disabled, ...props }: PasswordInputProps) {
         disabled={disabled}
         aria-label={visible ? "Hide password" : "Show password"}
         aria-pressed={visible}
+        aria-controls={props.id}
         className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-md text-muted-foreground transition-colors hover:text-primary focus-visible:text-primary focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
       >
         {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

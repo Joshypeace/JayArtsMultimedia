@@ -21,6 +21,7 @@ import {
   X
 } from "lucide-react"
 import Link from "next/link"
+import { PasswordInput } from "@/components/ui/password-input"
 
 interface User {
   id: string
@@ -756,8 +757,7 @@ export default function ManageUsers() {
 
                 <div>
                   <label className="block text-sm font-semibold mb-2">Password</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={newUser.password}
                     onChange={(e) => setNewUser({...newUser, password: e.target.value})}
                     className="w-full px-3 sm:px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:border-primary text-sm sm:text-base"

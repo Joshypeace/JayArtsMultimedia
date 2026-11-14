@@ -52,7 +52,8 @@ export async function PATCH(
     if ("title" in updates && (typeof updates.title !== "string" || !updates.title.trim())) {
       return invalid("Title is required")
     }
-    if ("category" in updates && !(Object.values(ServiceCategory) as unknown[]).includes(updates.category)) {
+    // "ALL" exists only for filtering on the public site; items need a real category.
+    if ("category" in updates && (updates.category === ServiceCategory.ALL || !(Object.values(ServiceCategory) as unknown[]).includes(updates.category))) {
       return invalid("Invalid category")
     }
     if ("tags" in updates && !(Array.isArray(updates.tags) && updates.tags.every((t) => typeof t === "string"))) {
@@ -64,10 +65,24 @@ export async function PATCH(
     if ("featured" in updates && typeof updates.featured !== "boolean") {
       return invalid("Featured must be true or false")
     }
-    for (const key of ["description", "imageUrl", "thumbnailUrl", "videoUrl"] as const) {
+    // imageUrl/thumbnailUrl are required columns; description/videoUrl may be cleared.
+    for (const key of ["imageUrl", "thumbnailUrl"] as const) {
+      if (key in updates && typeof updates[key] !== "string") return invalid(`${key} must be text`)
+    }
+    for (const key of ["description", "videoUrl"] as const) {
       if (key in updates && updates[key] !== null && typeof updates[key] !== "string") {
         return invalid(`${key} must be text`)
       }
+    }
+    if ("images" in updates && !(updates.images as unknown[]).every(
+      (img) => !!img && typeof img === "object" && typeof (img as { url?: unknown }).url === "string"
+    )) {
+      return invalid("Each image needs a url")
+    }
+    if ("publishedAt" in updates && updates.publishedAt !== null) {
+      const d = new Date(updates.publishedAt as string)
+      if (typeof updates.publishedAt !== "string" || isNaN(d.getTime())) return invalid("Invalid publish date")
+      updates.publishedAt = d
     }
 
     const portfolioItem = await prisma.portfolioItem.update({
