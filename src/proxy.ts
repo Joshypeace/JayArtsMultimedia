@@ -14,7 +14,8 @@ export async function proxy(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie });
   const isLoggedIn = !!token;
   const { pathname } = request.nextUrl;
-  const isAdminRoute = pathname.startsWith("/admin");
+  // /business is the full-page business system: same protection as /admin.
+  const isAdminRoute = pathname.startsWith("/admin") || pathname.startsWith("/business");
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
 
   // Not logged in and trying to access admin routes
@@ -38,5 +39,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/login", "/register"],
+  matcher: ["/admin/:path*", "/business/:path*", "/business", "/login", "/register"],
 };
