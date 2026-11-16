@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
+import { createPortal } from "react-dom"
 import Image from "next/image"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
@@ -13,10 +14,16 @@ interface ShootGalleryProps {
   filterable?: boolean
 }
 
+const noopSubscribe = () => () => {}
+
 /** Masonry gallery of real JayArts shoots with a keyboard/touch friendly lightbox. */
 export default function ShootGallery({ limit, filterable = false }: ShootGalleryProps) {
   const [category, setCategory] = useState<string>("All")
   const [open, setOpen] = useState<number | null>(null)
+  const closeBtn = useRef<HTMLButtonElement>(null)
+  // false during SSR + hydration, true afterwards: portal only once <body> is ours
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false)
+  const opener = useRef<HTMLElement | null>(null)
 
   const photos: GalleryPhoto[] = useMemo(() => {
     const list = category === "All" ? galleryPhotos : galleryPhotos.filter((p) => p.category === category)
@@ -36,12 +43,18 @@ export default function ShootGallery({ limit, filterable = false }: ShootGallery
       if (e.key === "ArrowRight") step(1)
       if (e.key === "ArrowLeft") step(-1)
     }
-    const prev = document.body.style.overflow
+    // lock scroll without a layout jump where the scrollbar was
+    const prev = { overflow: document.body.style.overflow, pad: document.body.style.paddingRight }
+    const sbw = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = "hidden"
+    if (sbw > 0) document.body.style.paddingRight = `${sbw}px`
     window.addEventListener("keydown", onKey)
+    closeBtn.current?.focus()
     return () => {
       window.removeEventListener("keydown", onKey)
-      document.body.style.overflow = prev
+      document.body.style.overflow = prev.overflow
+      document.body.style.paddingRight = prev.pad
+      opener.current?.focus()
     }
   }, [open, close, step])
 
@@ -72,7 +85,10 @@ export default function ShootGallery({ limit, filterable = false }: ShootGallery
           <motion.button
             key={p.src}
             type="button"
-            onClick={() => setOpen(i)}
+            onClick={(e) => {
+              opener.current = e.currentTarget
+              setOpen(i)
+            }}
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
@@ -85,7 +101,7 @@ export default function ShootGallery({ limit, filterable = false }: ShootGallery
               alt={p.alt}
               width={p.width}
               height={p.height}
-              sizes="(min-width:1024px) 25vw, (min-width:768px) 33vw, 50vw"
+              sizes="(min-width:1152px) 280px, (min-width:1024px) 25vw, (min-width:768px) 33vw, 50vw"
               className="h-auto w-full transition-transform duration-700 group-hover:scale-105"
             />
             <div className="pointer-events-none absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/0 to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
@@ -95,6 +111,10 @@ export default function ShootGallery({ limit, filterable = false }: ShootGallery
         ))}
       </div>
 
+      {mounted &&
+        createPortal(
+      // Portal to <body>: an ancestor stacking context (e.g. the home page's z-10 <main>)
+      // would otherwise put the fixed navbar on top of the lightbox.
       <AnimatePresence>
         {current && (
           <motion.div
@@ -115,9 +135,10 @@ export default function ShootGallery({ limit, filterable = false }: ShootGallery
               className="relative h-full w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <Image src={current.src} alt={current.alt} fill sizes="100vw" className="object-contain" priority />
+              <Image src={current.src} alt={current.alt} fill sizes="100vw" className="object-contain" />
             </motion.div>
             <button
+              ref={closeBtn}
               onClick={close}
               className="absolute right-3 top-3 rounded-full bg-white/10 p-2 text-white hover:bg-primary hover:text-primary-foreground"
               aria-label="Close"
@@ -149,7 +170,9 @@ export default function ShootGallery({ limit, filterable = false }: ShootGallery
             </p>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+          document.body
+        )}
     </div>
   )
 }

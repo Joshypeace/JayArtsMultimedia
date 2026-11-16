@@ -41,6 +41,7 @@ const services = [
     title: "Graphic Design",
     description: "Custom design solutions for brands, print, and digital",
     image: "/service-design.jpg",
+    imagePosition: "50% 50%",
     deliverables: [
       "Logo files (All formats)",
       "Brand guidelines",
@@ -133,7 +134,7 @@ export default function Services() {
                             alt={`${service.title} by JayArts Multimedia`}
                             fill
                             sizes="(min-width:768px) 50vw, 100vw"
-                            style={{ objectPosition: (service as { imagePosition?: string }).imagePosition ?? "50% 50%" }}
+                            style={{ objectPosition: service.imagePosition }}
                             className="object-cover transition-transform duration-700 hover:scale-105"
                           />
                           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />

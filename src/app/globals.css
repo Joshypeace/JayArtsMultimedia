@@ -226,8 +226,12 @@
   -webkit-mask: url("/jayarts-logo-white.png") center / contain no-repeat;
   mask: url("/jayarts-logo-white.png") center / contain no-repeat;
   animation: ja-shimmer 1.8s linear infinite, ja-breathe 2.4s ease-in-out infinite;
-  filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.35));
 }
+/* glow on the wrapper: a filter on the masked element itself would be clipped by the mask */
+.ja-loader-mark { filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.35)); }
+/* CSS-only safety net: on first load the overlay hides itself after 3.5s even if JS never hydrates */
+.ja-page-loader[data-boot] { animation: ja-autohide 0s linear 3.5s forwards; }
+@keyframes ja-autohide { to { opacity: 0; visibility: hidden; pointer-events: none; } }
 .ja-loader-ring {
   border: 2px solid rgba(212, 175, 55, 0.12);
   border-top-color: #d4af37;

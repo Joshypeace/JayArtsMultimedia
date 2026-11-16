@@ -244,103 +244,154 @@ export default function StudioBackground() {
     if (!ctx) return
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-    let w = 0, h = 0, dpr = 1, raf = 0, running = true
-    let scrollTarget = 0, scroll = 0
+    let w = 0, h = 0, dpr = 1, raf = 0, running = true, tick = 0
+    let scrollTarget = 0, scroll = 0, maxScroll = 1
     const t0 = performance.now()
 
+    // geometry depends only on the (quantized) scene position: rebuild only when it changes
+    let cacheKey = -1
+    let cache: ReturnType<typeof blend> = []
+    const sceneAt = (s: number) => {
+      const key = Math.round(s * 200)
+      if (key !== cacheKey) {
+        cacheKey = key
+        cache = blend(key / 200)
+      }
+      return cache
+    }
+    // strokes are batched into a few alpha buckets (one path each) instead of one path per line
+    const LEVELS = 8
+    const buckets: number[][] = Array.from({ length: LEVELS * 2 }, () => [])
+    const out = [0, 0, 0, 0] // reused per segment
+
+    const measure = () => {
+      maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+    }
     const resize = () => {
+      const nw = window.innerWidth, nh = window.innerHeight
+      // ignore small height changes (mobile URL bar show/hide): avoids reallocating the canvas
+      if (w && Math.abs(nw - w) < 1 && Math.abs(nh - h) < 120) return
       dpr = Math.min(window.devicePixelRatio || 1, 1.75)
-      w = window.innerWidth
-      h = window.innerHeight
+      w = nw
+      h = nh
       canvas.width = Math.round(w * dpr)
       canvas.height = Math.round(h * dpr)
       canvas.style.width = w + "px"
       canvas.style.height = h + "px"
+      measure()
+      draw(performance.now()) // resizing clears the canvas: repaint immediately
     }
     const readScroll = () => {
-      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
-      scrollTarget = Math.min(1, Math.max(0, window.scrollY / max))
+      scrollTarget = Math.min(1, Math.max(0, window.scrollY / maxScroll))
     }
 
-    const frame = (now: number) => {
-      if (!running) return
+    const draw = (now: number) => {
       scroll += (scrollTarget - scroll) * (reduce ? 1 : 0.08)
       const time = reduce ? 0 : (now - t0) / 1000
       const s = scroll * (SCENES.length - 1)
 
-      // orbiting view: slow drift + scroll-driven swing
-      const yaw = -0.6 + scroll * 1.7 + Math.sin(time * 0.12) * 0.2
-      const pitch = 0.42 - scroll * 0.1
+      // orbiting view: slow drift + scroll-driven swing (fixed when the user prefers reduced motion)
+      const yaw = reduce ? -0.35 : -0.6 + scroll * 1.7 + Math.sin(time * 0.12) * 0.2
+      const pitch = reduce ? 0.4 : 0.42 - scroll * 0.1
       const camDist = 13
       // fit the whole set on screen: scale by the smaller side (portrait phones too)
       const focal = Math.min(w * 1.25, h) * (w < 640 ? 1.15 : 1.4)
       const cx = w * 0.5, cy = h * 0.56
+      const cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch)
 
-      const project = (p: V3): [number, number, number] | null => {
-        let q = rotY([p[0], p[1] - 1.1, p[2]], yaw)
-        q = rotX(q, pitch)
-        const z = q[2] + camDist
-        if (z < 0.5) return null
-        return [cx + (q[0] / z) * focal, cy - (q[1] / z) * focal, z]
+      for (const b of buckets) b.length = 0
+      for (const o of sceneAt(s)) {
+        if (o.alpha <= 0.01) continue
+        const visibleCount = Math.ceil(o.segs.length * o.draw)
+        const base = (o.dim ? 0.14 : 0.6) * o.alpha
+        for (let k = 0; k < visibleCount; k++) {
+          const seg = o.segs[k]
+          let ok = true, zSum = 0
+          for (let e = 0; e < 2; e++) {
+            const p = seg[e]
+            const x = p[0], y = p[1] - 1.1, z = p[2]
+            const x1 = x * cyw + z * syw, z1 = -x * syw + z * cyw
+            const y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp + camDist
+            if (z2 < 0.5) { ok = false; break }
+            out[e * 2] = cx + (x1 / z2) * focal
+            out[e * 2 + 1] = cy - (y2 / z2) * focal
+            zSum += z2
+          }
+          if (!ok) continue
+          // fade with depth so the far side recedes
+          const depth = Math.min(1, Math.max(0.25, 1.6 - zSum / 2 / camDist))
+          const level = Math.min(LEVELS - 1, Math.round(base * depth * (LEVELS - 1) / 0.6))
+          if (level <= 0) continue
+          const b = buckets[(o.dim ? LEVELS : 0) + level]
+          b.push(out[0], out[1], out[2], out[3])
+        }
       }
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       ctx.clearRect(0, 0, w, h)
       ctx.lineCap = "round"
       ctx.globalCompositeOperation = "lighter"
-
-      for (const o of blend(s)) {
-        if (o.alpha <= 0.01) continue
-        const n = o.segs.length
-        const visible = Math.ceil(n * o.draw)
-        ctx.lineWidth = o.dim ? 0.7 : 1.3
-        for (let k = 0; k < visible; k++) {
-          const [a, b] = o.segs[k]
-          const pa = project(a), pb = project(b)
-          if (!pa || !pb) continue
-          // fade with depth so the far side recedes
-          const depth = Math.min(1, Math.max(0.25, 1.6 - ((pa[2] + pb[2]) / 2) / camDist))
-          ctx.strokeStyle = `rgba(212,175,55,${(o.dim ? 0.14 : 0.6) * o.alpha * depth})`
-          ctx.beginPath()
-          ctx.moveTo(pa[0], pa[1])
-          ctx.lineTo(pb[0], pb[1])
-          ctx.stroke()
+      for (let bi = 0; bi < buckets.length; bi++) {
+        const b = buckets[bi]
+        if (!b.length) continue
+        const dim = bi >= LEVELS
+        ctx.lineWidth = dim ? 0.7 : 1.3
+        ctx.strokeStyle = `rgba(212,175,55,${(((bi % LEVELS) / (LEVELS - 1)) * 0.6).toFixed(3)})`
+        ctx.beginPath()
+        for (let q = 0; q < b.length; q += 4) {
+          ctx.moveTo(b[q], b[q + 1])
+          ctx.lineTo(b[q + 2], b[q + 3])
         }
+        ctx.stroke()
       }
 
-      // a soft key-light glow on the subject position
-      const glow = project([0, 1.0, -1.1])
-      if (glow) {
-        const g = ctx.createRadialGradient(glow[0], glow[1], 0, glow[0], glow[1], focal * 0.35)
-        g.addColorStop(0, "rgba(212,175,55,0.10)")
-        g.addColorStop(1, "rgba(212,175,55,0)")
-        ctx.fillStyle = g
-        ctx.fillRect(0, 0, w, h)
-      }
+      // a soft key-light glow on the subject position (painted only where it shows)
+      // project the subject point [0, 1.0, -1.1] (same math as the line projection above)
+      const gy = 1.0 - 1.1, gx1 = -1.1 * syw, gz1 = -1.1 * cyw
+      const gz2 = gy * sp + gz1 * cp + camDist
+      const gx = cx + (gx1 / gz2) * focal, gyy = cy - ((gy * cp - gz1 * sp) / gz2) * focal
+      const r = focal * 0.35
+      const g = ctx.createRadialGradient(gx, gyy, 0, gx, gyy, r)
+      g.addColorStop(0, "rgba(212,175,55,0.10)")
+      g.addColorStop(1, "rgba(212,175,55,0)")
+      ctx.fillStyle = g
+      ctx.fillRect(gx - r, gyy - r, r * 2, r * 2)
+    }
 
-      if (!reduce) raf = requestAnimationFrame(frame)
+    const loop = (now: number) => {
+      if (!running) return
+      // ~30fps on phones/tablets, 60fps on desktops
+      if (w >= 768 || (tick++ & 1) === 0) draw(now)
+      raf = requestAnimationFrame(loop)
+    }
+    const schedule = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(reduce ? draw : loop)
     }
 
     const onVis = () => {
       running = !document.hidden
       cancelAnimationFrame(raf)
-      if (running) raf = requestAnimationFrame(frame)
+      if (running && !reduce) schedule()
     }
     const onScroll = () => {
       readScroll()
-      if (reduce) raf = requestAnimationFrame(frame)
+      if (reduce) schedule() // static mode: redraw only when the scroll position changes
     }
+    const ro = new ResizeObserver(measure) // page height changes (images loading, etc.)
+    ro.observe(document.body)
 
     resize()
     readScroll()
     scroll = scrollTarget
-    raf = requestAnimationFrame(frame)
+    schedule()
     window.addEventListener("resize", resize)
     window.addEventListener("scroll", onScroll, { passive: true })
     document.addEventListener("visibilitychange", onVis)
     return () => {
       running = false
       cancelAnimationFrame(raf)
+      ro.disconnect()
       window.removeEventListener("resize", resize)
       window.removeEventListener("scroll", onScroll)
       document.removeEventListener("visibilitychange", onVis)

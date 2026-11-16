@@ -216,7 +216,7 @@ export default function About() {
                 />
                 
                 {/* Social Links Overlay - Visible on hover for desktop, always visible on mobile */}
-                <div className={`${Object.values(member.social).some(Boolean) ? "" : "hidden "}absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent flex items-end justify-center pb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100 opacity-100 md:opacity-0`}> {/* This makes it visible on mobile */}
+                <div className={`${Object.values(member.social).some(Boolean) ? "" : "hidden "}absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent flex items-end justify-center pb-6 transition-opacity duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100`}> {/* This makes it visible on mobile */}
                   <div className="flex gap-4">
                     {/* Instagram */}
                     {member.social.instagram && (

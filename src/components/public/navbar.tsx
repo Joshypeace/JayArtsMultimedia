@@ -57,6 +57,8 @@ export default function PublicNavBar() {
 
         <button
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen}
           className="lg:hidden text-primary hover:text-primary/80 transition-colors"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
