@@ -35,7 +35,7 @@ export default function PublicNavBar() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex gap-8">
+        <div className="hidden lg:flex gap-8">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -50,14 +50,16 @@ export default function PublicNavBar() {
         {/* Booking Button */}
         <Link
           href="/booking"
-          className="hidden md:inline-block px-6 py-2 bg-gradient-to-r from-primary to-secondary text-black rounded-lg hover:shadow-lg hover:shadow-primary/30 transition-all font-medium"
+          className="hidden lg:inline-block whitespace-nowrap px-6 py-2 bg-gradient-to-r from-primary to-secondary text-black rounded-lg hover:shadow-lg hover:shadow-primary/30 transition-all font-medium"
         >
           Book Now
         </Link>
 
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-primary hover:text-primary/80 transition-colors"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen}
+          className="lg:hidden text-primary hover:text-primary/80 transition-colors"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -70,7 +72,7 @@ export default function PublicNavBar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 400 }}
             transition={{ type: "spring", damping: 25, stiffness: 120 }}
-            className="fixed top-16 right-0 bottom-0 w-64 bg-black border-l border-primary/20 md:hidden"
+            className="fixed top-16 right-0 bottom-0 w-64 bg-black border-l border-primary/20 lg:hidden"
           >
             <div className="px-4 py-6 flex flex-col gap-4 h-full">
               {navItems.map((item) => (

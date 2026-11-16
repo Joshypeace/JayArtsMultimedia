@@ -28,12 +28,23 @@ const SocialIcon = ({
   </a>
 )
 
-const teamMembers = [
+type TeamMember = {
+  name?: string
+  role: string
+  bio: string
+  image: string
+  /** CSS object-position so faces stay in frame inside the 4:5 card */
+  focus?: string
+  social: { instagram?: string; linkedin?: string; twitter?: string; facebook?: string; tiktok?: string }
+}
+
+const teamMembers: TeamMember[] = [
   {
     name: "Joel Chilapondwa",
     role: "Founder & Creative Director",
     bio: "Visionary filmmaker with 10+ years in cinematic production",
     image: "/IMG_4769.JPEG",
+    focus: "42% 20%",
     social: {
       instagram: "https://www.instagram.com/jay_arts_multimedia?igsh=MWZ5YTl4Mjh3ZG9ndA%3D%3D&utm_source=qr",
       linkedin: "https://linkedin.com/in/joel",
@@ -41,26 +52,20 @@ const teamMembers = [
     }
   },
   {
-    name: "Joshua Simengwa",
-    role: "Cinematographer & Director of Cinematography",
-    bio: "Award-winning photographer specializing in luxury brands",
-    image: "/jay.jpeg",
-    social: {
-      instagram: "https://instagram.com/joshua",
-      twitter: "https://twitter.com/joshua",
-      linkedin: "https://linkedin.com/in/joshua"
-    }
+    // TODO: add the manager's name
+    role: "Manager",
+    bio: "Keeps every project, schedule and client relationship running smoothly",
+    image: "/team/manager.jpg",
+    focus: "50% 15%",
+    social: {}
   },
   {
-    name: "Hasheem Deza",
-    role: "Lead Photographer & Videographer",
-    bio: "Brand strategist and graphic design innovator",
-    image: "/Classic-6256.jpg",
-    social: {
-      instagram: "https://www.instagram.com/skyeem_mw?igsh=MTVkcWR2ZTI5eTV2ag==",
-      facebook: "https://www.facebook.com/yonexhashim.deza",
-      tiktok: "https://www.tiktok.com/@skyeem_mw?_r=1&_t=ZS-926qLKlZp2r",
-    }
+    // TODO: add the receptionist's name
+    role: "Receptionist",
+    bio: "Your first point of contact for bookings, enquiries and studio visits",
+    image: "/team/receptionist.jpg",
+    focus: "50% 15%",
+    social: {}
   },
 ]
 
@@ -109,11 +114,12 @@ export default function About() {
               viewport={{ once: true }}
             >
               <Image
-                src="/about-image.jpg"
-                alt="JayArts workspace"
-                width={500}
-                height={400}
-                className="rounded-xl object-cover"
+                src="/gallery/engagement-decor.jpg"
+                alt="Engagement stage styled and photographed by JayArts"
+                width={1600}
+                height={1068}
+                sizes="(min-width:768px) 50vw, 100vw"
+                className="h-auto w-full rounded-xl border border-border/60 object-cover"
               />
             </motion.div>
 
@@ -191,34 +197,32 @@ export default function About() {
         <div className="flex flex-wrap justify-center gap-6">
           {teamMembers.map((member, idx) => (
             <motion.div
-              key={member.name}
+              key={member.role}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1, duration: 0.6 }}
               viewport={{ once: true }}
               whileHover={{ y: -8 }}
-              className="group w-[260px] relative"
+              className="group relative w-full max-w-[300px] sm:w-[280px]"
             >
-              <div className="relative rounded-xl mb-4 h-64 bg-zinc-900 flex items-center justify-center overflow-hidden">
+              <div className="relative mb-4 aspect-[4/5] overflow-hidden rounded-xl border border-border/60 bg-zinc-900">
                 <Image
                   src={member.image || "/placeholder.svg"}
-                  alt={member.name}
+                  alt={member.name ? `${member.name}, ${member.role}` : `JayArts ${member.role}`}
                   fill
-                  className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                  sizes="(min-width:640px) 280px, 90vw"
+                  style={{ objectPosition: member.focus ?? "50% 20%" }}
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 
                 {/* Social Links Overlay - Visible on hover for desktop, always visible on mobile */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent 
-                              flex items-end justify-center pb-6
-                              opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                              md:opacity-0 md:group-hover:opacity-100
-                              opacity-100 md:opacity-0"> {/* This makes it visible on mobile */}
+                <div className={`${Object.values(member.social).some(Boolean) ? "" : "hidden "}absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent flex items-end justify-center pb-6 transition-opacity duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100`}> {/* This makes it visible on mobile */}
                   <div className="flex gap-4">
                     {/* Instagram */}
                     {member.social.instagram && (
                       <SocialIcon 
                         href={member.social.instagram}
-                        label={`${member.name}'s Instagram`}
+                        label={`${member.name ?? member.role}'s Instagram`}
                         hoverColor="bg-pink-600"
                       >
                         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -231,7 +235,7 @@ export default function About() {
                     {member.social.linkedin && (
                       <SocialIcon 
                         href={member.social.linkedin}
-                        label={`${member.name}'s LinkedIn`}
+                        label={`${member.name ?? member.role}'s LinkedIn`}
                         hoverColor="bg-blue-700"
                       >
                         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -244,7 +248,7 @@ export default function About() {
                     {member.social.twitter && (
                       <SocialIcon 
                         href={member.social.twitter}
-                        label={`${member.name}'s Twitter`}
+                        label={`${member.name ?? member.role}'s Twitter`}
                         hoverColor="bg-blue-400"
                       >
                         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -257,7 +261,7 @@ export default function About() {
                     {member.social.facebook && (
                       <SocialIcon 
                         href={member.social.facebook}
-                        label={`${member.name}'s Facebook`}
+                        label={`${member.name ?? member.role}'s Facebook`}
                         hoverColor="bg-blue-600"
                       >
                         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -270,7 +274,7 @@ export default function About() {
                     {member.social.tiktok && (
                       <SocialIcon 
                         href={member.social.tiktok}
-                        label={`${member.name}'s TikTok`}
+                        label={`${member.name ?? member.role}'s TikTok`}
                         hoverColor="bg-black"
                       >
                         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -282,8 +286,8 @@ export default function About() {
                 </div>
               </div>
               
-              <h3 className="text-lg font-semibold">{member.name}</h3>
-              <p className="text-primary text-sm mb-2">{member.role}</p>
+              <h3 className="text-lg font-semibold">{member.name ?? member.role}</h3>
+              {member.name && <p className="text-primary text-sm mb-2">{member.role}</p>}
               <p className="text-foreground/60 text-sm">{member.bio}</p>
             </motion.div>
           ))}

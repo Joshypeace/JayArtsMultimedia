@@ -6,6 +6,7 @@ import { CldImage } from 'next-cloudinary'
 import { X, Play, Tag } from "lucide-react"
 import PublicNavBar from "@/components/public/navbar"
 import Footer from "@/components/public/footer"
+import ShootGallery from "@/components/public/shoot-gallery"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface PortfolioItem {
@@ -151,8 +152,21 @@ export default function Portfolio() {
           </div>
         </section>
 
+        {/* Curated shoots (static, from /public/gallery) */}
+        <section className="px-4 pb-8 sm:pb-12">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
+              Recent <span className="text-primary">Shoots</span>
+            </h2>
+            <ShootGallery filterable />
+          </div>
+        </section>
+
         <section className="py-8 sm:py-12 px-4">
           <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
+              Projects
+            </h2>
             <div className="flex flex-col md:flex-row justify-between gap-4 mb-8">
               <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
                 {categories.map((category) => (

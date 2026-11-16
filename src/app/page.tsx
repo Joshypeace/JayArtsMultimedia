@@ -8,6 +8,8 @@ import HeroSection from "@/components/public/hero-section"
 import ServicesPreview from "@/components/public/services-preview"
 import PortfolioPreview from "@/components/public/portfolio-preview"
 import CallToAction from "@/components/public/call-to-action"
+import StudioBackground from "@/components/public/studio-background"
+import RecentWork from "@/components/public/recent-work"
 
 export default function Home() {
   const ref = useRef(null)
@@ -16,6 +18,8 @@ export default function Home() {
 
   return (
     <div ref={ref} className="bg-background text-foreground min-h-screen">
+      {/* gold wireframe studio that changes setup as you scroll (home page only) */}
+      <StudioBackground />
       <PublicNavBar />
 
       <motion.div
@@ -23,14 +27,17 @@ export default function Home() {
         style={{ scaleX: progressScale }}
       />
 
-      <main>
+      <main className="relative z-10">
         <HeroSection />
         <ServicesPreview />
         <PortfolioPreview />
+        <RecentWork />
         <CallToAction />
       </main>
 
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   )
 }
