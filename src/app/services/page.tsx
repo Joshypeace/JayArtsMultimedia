@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { motion } from "framer-motion"
 import { Check } from "lucide-react"
 import PublicNavBar from "@/components/public/navbar"
@@ -10,7 +11,8 @@ const services = [
   {
     title: "Photography",
     description: "Professional photography services for brands and events",
-    image: "/service-photography.jpg",
+    image: "/gallery/graduation-night-smile.jpg",
+    imagePosition: "50% 25%",
     deliverables: [
       "High-resolution edited photos",
       "Web-optimized versions",
@@ -23,7 +25,8 @@ const services = [
   {
     title: "Videography",
     description: "Cinematic video production for commercials, events, and content",
-    image: "/service-videography.jpg",
+    image: "/gallery/engagement-groom-aisle.jpg",
+    imagePosition: "50% 40%",
     deliverables: [
       "4K video files",
       "Multiple formats",
@@ -52,7 +55,8 @@ const services = [
   {
     title: "Live Streaming",
     description: "Professional live streaming for events, conferences, and online content",
-    image: "/service-live-streaming.jpg",
+    image: "/gallery/event-tent-wide.jpg",
+    imagePosition: "50% 50%",
     deliverables: [
       "Multi-camera setup",
       "Professional audio",
@@ -113,7 +117,7 @@ export default function Services() {
                 className="relative"
               >
                 <div className="grid md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-start">
-                  {/* Image placeholder - you can replace with actual images */}
+                  {/* Service image */}
                   <motion.div
                     initial={{ opacity: 0, x: serviceIdx % 2 === 1 ? 50 : -50 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -121,10 +125,24 @@ export default function Services() {
                     viewport={{ once: true }}
                     className={`${serviceIdx % 2 === 1 ? "md:order-2" : ""}`}
                   >
-                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20 aspect-video">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-primary/30 text-2xl font-bold">{service.title}</span>
-                      </div>
+                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20 aspect-video border border-border/60">
+                      {service.image ? (
+                        <>
+                          <Image
+                            src={service.image}
+                            alt={`${service.title} by JayArts Multimedia`}
+                            fill
+                            sizes="(min-width:768px) 50vw, 100vw"
+                            style={{ objectPosition: (service as { imagePosition?: string }).imagePosition ?? "50% 50%" }}
+                            className="object-cover transition-transform duration-700 hover:scale-105"
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-primary/30 text-2xl font-bold">{service.title}</span>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
 

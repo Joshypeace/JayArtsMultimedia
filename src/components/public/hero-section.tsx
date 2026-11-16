@@ -13,7 +13,7 @@ export default function HeroSection() {
   return (
     <section ref={ref} className="relative min-h-screen overflow-hidden pt-20 flex flex-col justify-center">
       <motion.div
-        className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background"
+        className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-background/40"
         style={{ y, opacity }}
       />
 

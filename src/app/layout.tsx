@@ -3,8 +3,10 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
+import { preload } from "react-dom"
 import "./globals.css"
 import AuthSessionProvider from "@/components/providers/session-provider"
+import PageLoader from "@/components/common/page-loader"
 
 export const metadata: Metadata = {
   title: "JayArts Multimedia - Photography, Videography & Design",
@@ -14,11 +16,14 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // The loader masks this image; fetch it with top priority so the loader is never blank.
+  preload("/jayarts-logo-white.png", { as: "image", fetchPriority: "high" })
   return (
     <html lang="en" className="dark">
       <body
         className={`${GeistSans.className} ${GeistMono.variable} antialiased bg-background text-foreground`}
       >
+        <PageLoader />
         <AuthSessionProvider>{children}</AuthSessionProvider>
         <Analytics />
       </body>
