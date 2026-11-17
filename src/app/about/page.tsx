@@ -57,7 +57,9 @@ const teamMembers: TeamMember[] = [
     bio: "Keeps every project, schedule and client relationship running smoothly",
     image: "/team/manager.jpg",
     focus: "50% 15%",
-    social: {}
+    social: {
+      facebook: "https://www.facebook.com/aphotobrisno33",
+    }
   },
   {
     name: "Liana Mhone",
@@ -65,7 +67,11 @@ const teamMembers: TeamMember[] = [
     bio: "Looks after our clients from first enquiry to final delivery",
     image: "/team/client-relations.jpg",
     focus: "50% 15%",
-    social: {}
+    social: {
+      instagram: "https://www.instagram.com/lianamhone",
+      facebook: "https://www.facebook.com/liana.mhone.7",
+      tiktok: "https://www.tiktok.com/@lianamhone724gmail.com",
+    }
   },
 ]
 
