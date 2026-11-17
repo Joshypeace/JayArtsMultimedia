@@ -52,7 +52,7 @@ const teamMembers: TeamMember[] = [
     }
   },
   {
-    // TODO: add the manager's name
+    name: "Chifuniro Mbofana",
     role: "Manager",
     bio: "Keeps every project, schedule and client relationship running smoothly",
     image: "/team/manager.jpg",
@@ -60,10 +60,10 @@ const teamMembers: TeamMember[] = [
     social: {}
   },
   {
-    // TODO: add the receptionist's name
-    role: "Receptionist",
-    bio: "Your first point of contact for bookings, enquiries and studio visits",
-    image: "/team/receptionist.jpg",
+    name: "Liana Mhone",
+    role: "Client Relations Officer",
+    bio: "Looks after our clients from first enquiry to final delivery",
+    image: "/team/client-relations.jpg",
     focus: "50% 15%",
     social: {}
   },
