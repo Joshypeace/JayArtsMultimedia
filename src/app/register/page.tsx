@@ -252,8 +252,8 @@ export default function RegisterPage() {
                     </p>
                     <ol className="list-decimal list-inside space-y-1">
                       <li>An administrator will review your registration</li>
-                      <li>You&apos;ll receive an email once your account is approved</li>
-                      <li>Then you can log in to access the admin area</li>
+                      <li>Once approved, you can sign in with the email and password you chose</li>
+                      <li>Ask the studio team if you need your approval sped up</li>
                     </ol>
                   </div>
                 </div>

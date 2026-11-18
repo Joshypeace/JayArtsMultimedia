@@ -31,6 +31,13 @@ export async function POST(request: Request) {
       )
     }
 
+    if (String(name).length > 100 || String(subject).length > 200 || String(email).length > 200) {
+      return NextResponse.json(
+        { success: false, error: "Name, email or subject is too long" },
+        { status: 400 }
+      )
+    }
+
     // Validate message length
     if (message.length < 10) {
       return NextResponse.json(
@@ -82,7 +89,8 @@ export async function POST(request: Request) {
         subject,
         message,
         source: "contact_form",
-        category: body.category || null,
+        // only accept real enum values (anything else would make Prisma throw a 500)
+        category: ["PHOTOGRAPHY", "VIDEOGRAPHY", "GRAPHIC_DESIGN"].includes(body.category) ? body.category : null,
         status: "NEW"
       }
     })

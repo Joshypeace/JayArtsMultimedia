@@ -75,11 +75,11 @@ export default function Contact() {
         throw new Error("Please enter a valid email address")
       }
 
-      // Validate phone if provided (Malawi format)
+      // Validate phone if provided: Malawi numbers (0... / +265...) or any international +number
       if (formData.phone) {
-        const phoneRegex = /^(?:\+265|0)[1-9]\d{7,8}$/
-        if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
-          throw new Error("Please enter a valid Malawian phone number")
+        const phoneRegex = /^(?:0[1-9]\d{7,8}|\+\d{8,15})$/
+        if (!phoneRegex.test(formData.phone.replace(/[\s()-]/g, ''))) {
+          throw new Error("Please enter a valid phone number (e.g. 0991 234 567 or +265 991 234 567)")
         }
       }
 

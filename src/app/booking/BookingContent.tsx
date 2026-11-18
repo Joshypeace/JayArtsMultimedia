@@ -9,6 +9,7 @@ import PublicNavBar from "@/components/public/navbar"
 import Footer from "@/components/public/footer"
 
 const eventTypes = [
+  "Graduation Photography",
   "Wedding Photography",
   "Corporate Event Photography",
   "Product Photography",
@@ -20,6 +21,15 @@ const eventTypes = [
   "Multi-Service Package",
   "Live Streaming Services",
 ]
+
+// The services page links with its card titles (?service=Photography): map them onto
+// a real option so the select is pre-filled instead of blank.
+const serviceToEventType: Record<string, string> = {
+  Photography: "Portrait Photography",
+  Videography: "Event Videography",
+  "Graphic Design": "Brand Design",
+  "Live Streaming": "Live Streaming Services",
+}
 
 
 
@@ -51,7 +61,9 @@ export default function BookingContent() {
     if (serviceParam) {
       setFormData(prev => ({
         ...prev,
-        eventType: serviceParam,
+        eventType: eventTypes.includes(serviceParam)
+          ? serviceParam
+          : serviceToEventType[serviceParam] ?? prev.eventType,
         additionalNotes: packageParam 
           ? `Interested in: ${packageParam} package\n${prev.additionalNotes}`
           : `Interested in: ${serviceParam} service\n${prev.additionalNotes}`
@@ -219,9 +231,6 @@ export default function BookingContent() {
                 <h3 className="text-xl font-bold text-green-400 mb-2">Booking Request Received!</h3>
                 <p className="text-green-400/80">
                   Thank you for your booking request. We&apos;ll review your details and get back to you within 24 hours.
-                </p>
-                <p className="text-sm text-green-400/60 mt-2">
-                  A confirmation has been sent to your email.
                 </p>
               </motion.div>
             )}

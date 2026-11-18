@@ -5,7 +5,17 @@ import Footer from "@/components/public/footer"
 import Link from "next/link"
 import Image from "next/image"
 import { prisma } from "@/lib/prisma"
-import { siX, siFacebook, siLinkerd } from "simple-icons/icons";
+import { siX, siFacebook } from "simple-icons/icons"
+import { siteUrl } from "@/lib/site"
+import { sanitizePostHtml } from "@/lib/sanitize"
+
+// simple-icons no longer ships LinkedIn (trademark request), so inline its mark.
+const linkedInIcon = {
+  path: "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+}
+
+// Re-render at most every 5 minutes so edits, unpublishing and deletes show up without a redeploy.
+export const revalidate = 300
 
 
 interface BlogPost {
@@ -37,8 +47,8 @@ interface BlogPostPageProps {
 
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  const post = await prisma.blogPost.findUnique({
-    where: { slug },
+  const post = await prisma.blogPost.findFirst({
+    where: { slug, isPublished: true },
     include: {
       author: {
         select: {
@@ -65,6 +75,7 @@ async function getRelatedPosts(currentSlug: string): Promise<BlogPost[]> {
   const posts = await prisma.blogPost.findMany({
     where: {
       slug: { not: currentSlug },
+      isPublished: true,
     },
     orderBy: { publishedAt: "desc" },
     take: 3,
@@ -212,7 +223,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           {/* Content */}
           <div
             className="prose prose-lg dark:prose-invert max-w-none mb-8"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.content) }}
           />
 
           {/* Tags */}
@@ -248,23 +259,23 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
                     post.title
                   )}&url=${encodeURIComponent(
-                    `https://yourdomain.com/blog/${post.slug}`
+                    `${siteUrl}/blog/${post.slug}`
                   )}`,
                 },
                 {
                   name: "Facebook",
                   icon: siFacebook,
                   url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                    `https://yourdomain.com/blog/${post.slug}`
+                    `${siteUrl}/blog/${post.slug}`
                   )}`,
                 },
                 {
                   name: "LinkedIn",
-                  icon: siLinkerd,
+                  icon: linkedInIcon,
                   url: `https://www.linkedin.com/shareArticle?mini=true&title=${encodeURIComponent(
                     post.title
                   )}&url=${encodeURIComponent(
-                    `https://yourdomain.com/blog/${post.slug}`
+                    `${siteUrl}/blog/${post.slug}`
                   )}`,
                 },
               ].map((social) => (
@@ -273,13 +284,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`Share on ${social.name}`}
                   className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 hover:border-primary transition-colors"
                 >
                   <svg
-                    role="img"
+                    aria-hidden="true"
                     viewBox="0 0 24 24"
                     className="w-4 h-4"
-                    fill={`#${social.icon.hex}`}
+                    fill="currentColor"
                   >
                     <path d={social.icon.path} />
                   </svg>
@@ -374,7 +386,6 @@ export async function generateStaticParams() {
   const posts = await prisma.blogPost.findMany({
     select: { slug: true },
     where: {
-  //// remove if you don't have status
       isPublished: true,
     },
   })

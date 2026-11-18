@@ -141,14 +141,6 @@ export default function Portfolio() {
             >
               Showcasing our best work across photography, videography, and design
             </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-sm text-foreground/60 mt-4"
-            >
-              {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} found
-            </motion.p>
           </div>
         </section>
 
@@ -162,6 +154,9 @@ export default function Portfolio() {
           </div>
         </section>
 
+        {/* Client projects from the admin area: hidden until there are some */}
+        {items.length > 0 && (
+        <>
         <section className="py-8 sm:py-12 px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
@@ -276,6 +271,8 @@ export default function Portfolio() {
             )}
           </div>
         </section>
+        </>
+        )}
       </main>
 
       <AnimatePresence>

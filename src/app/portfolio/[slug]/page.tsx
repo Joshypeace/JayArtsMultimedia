@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { notFound, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { CldImage } from 'next-cloudinary'
 import { 
   Calendar, 
@@ -68,7 +68,7 @@ export default function PortfolioDetailPage({ params }: PortfolioDetailPageProps
         const { slug } = await params
         
         if (!slug) {
-          notFound()
+          setError("This project isn't available.")
           return
         }
 
@@ -76,7 +76,7 @@ export default function PortfolioDetailPage({ params }: PortfolioDetailPageProps
         
         if (!response.ok) {
           if (response.status === 404) {
-            notFound()
+            setError("This project isn't available. It may have been moved or unpublished.")
             return
           }
           throw new Error("Failed to fetch portfolio item")

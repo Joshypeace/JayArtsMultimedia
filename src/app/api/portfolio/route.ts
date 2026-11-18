@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma"
 export async function GET() {
   try {
     const portfolioItems = await prisma.portfolioItem.findMany({
-
+      // only published (and not scheduled for later) items are public
+      where: { publishedAt: { not: null, lte: new Date() } },
       orderBy: [
         { featured: 'desc' },
         { publishedAt: 'desc' }

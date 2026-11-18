@@ -15,12 +15,8 @@ export async function GET(
       )
     }
 
-    // Update + return in one query
-    const portfolioItem = await prisma.portfolioItem.update({
-      where: { slug },
-      data: {
-        views: { increment: 1 }
-      },
+    const portfolioItem = await prisma.portfolioItem.findFirst({
+      where: { slug, publishedAt: { not: null, lte: new Date() } },
       include: {
         user: {
           select: {
@@ -36,6 +32,11 @@ export async function GET(
         { status: 404 }
       )
     }
+
+    // count the view; a failure here must not break the page
+    await prisma.portfolioItem
+      .update({ where: { id: portfolioItem.id }, data: { views: { increment: 1 } } })
+      .catch(() => {})
 
     return NextResponse.json(portfolioItem)
   } catch (error) {

@@ -87,9 +87,9 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Contact</h3>
             <ul className="space-y-3">
               {[
-                { icon: Mail, text: "joelchilapondwa@gmail.com" },
-                { icon: Phone, text: "(+265) 884-849-879" },
-                { icon: MapPin, text: "Lilongwe, Malawi" },
+                { icon: Mail, text: "joelchilapondwa@gmail.com", href: "mailto:joelchilapondwa@gmail.com" },
+                { icon: Phone, text: "(+265) 884-849-879", href: "tel:+265884849879" },
+                { icon: MapPin, text: "Lilongwe, Malawi", href: undefined },
               ].map((item, idx) => {
                 const Icon = item.icon
                 return (
@@ -99,7 +99,13 @@ export default function Footer() {
                     whileHover={{ x: 5 }}
                   >
                     <Icon size={16} className="text-primary" />
-                    {item.text}
+                    {item.href ? (
+                      <a href={item.href} className="hover:text-primary transition-colors">
+                        {item.text}
+                      </a>
+                    ) : (
+                      item.text
+                    )}
                   </motion.li>
                 )
               })}
@@ -115,6 +121,9 @@ export default function Footer() {
                   <motion.a
                     key={idx}
                     href={link.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={link.label}
                     className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition-colors"
                     whileHover={{ scale: 1.1, rotate: 10 }}
                     whileTap={{ scale: 0.95 }}
