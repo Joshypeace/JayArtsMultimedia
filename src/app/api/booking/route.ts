@@ -12,7 +12,7 @@ const optionalText = (max: number) =>
     .transform((v) => (v ? v : null))
 
 const bookingSchema = z.object({
-  eventType: z.string().trim().min(1).max(100),
+  eventType: z.string().trim().min(1, "Please choose a service").max(100),
   eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   time: z
     .string()
@@ -21,8 +21,8 @@ const bookingSchema = z.object({
     .nullable()
     .or(z.literal("")),
   venue: optionalText(300),
-  clientName: z.string().trim().min(2).max(100),
-  clientEmail: z.string().trim().email().max(200),
+  clientName: z.string().trim().min(2, "Please enter your full name").max(100, "Name is too long"),
+  clientEmail: z.string().trim().email("Please enter a valid email address").max(200),
   clientPhone: optionalText(30),
   company: optionalText(150),
   budgetRange: optionalText(50),

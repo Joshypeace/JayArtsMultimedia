@@ -33,7 +33,7 @@ export async function GET(
       )
     }
 
-    // count the view without delaying the response
+    // count the view; a failure here must not break the page
     await prisma.portfolioItem
       .update({ where: { id: portfolioItem.id }, data: { views: { increment: 1 } } })
       .catch(() => {})

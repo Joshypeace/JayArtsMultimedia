@@ -10,6 +10,7 @@ export function sanitizePostHtml(html: string): string {
     allowedAttributes: {
       ...sanitizeHtml.defaults.allowedAttributes,
       "*": ["class", "id"],
+      a: ["href", "name", "target", "rel"],
       img: ["src", "alt", "title", "width", "height", "loading"],
       iframe: ["src", "width", "height", "allow", "allowfullscreen", "frameborder", "title"],
     },

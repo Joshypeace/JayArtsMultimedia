@@ -221,14 +221,14 @@ export default function About() {
               transition={{ delay: idx * 0.1, duration: 0.6 }}
               viewport={{ once: true }}
               whileHover={{ y: -8 }}
-              className="group relative w-full max-w-[300px] sm:w-[280px] lg:w-[255px]"
+              className="group relative w-full max-w-[300px] sm:w-[280px] lg:w-[230px] xl:w-[255px]"
             >
               <div className="relative mb-4 aspect-[4/5] overflow-hidden rounded-xl border border-border/60 bg-zinc-900">
                 <Image
                   src={member.image || "/placeholder.svg"}
                   alt={member.name ? `${member.name}, ${member.role}` : `JayArts ${member.role}`}
                   fill
-                  sizes="(min-width:1024px) 255px, (min-width:640px) 280px, 90vw"
+                  sizes="(min-width:1280px) 255px, (min-width:1024px) 230px, (min-width:640px) 280px, 90vw"
                   style={{ objectPosition: member.focus ?? "50% 20%" }}
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />

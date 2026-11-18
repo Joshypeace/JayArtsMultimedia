@@ -3,7 +3,15 @@
 // Vercel production domain is used so links, sitemap and social previews still work.
 function resolveSiteUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim()
-  if (explicit) return explicit.replace(/\/+$/, "")
+  if (explicit) {
+    // tolerate a value entered without the scheme (e.g. "www.example.com")
+    const withScheme = /^https?:\/\//i.test(explicit) ? explicit : `https://${explicit}`
+    try {
+      return new URL(withScheme).origin
+    } catch {
+      console.error("Invalid NEXT_PUBLIC_SITE_URL, falling back:", explicit)
+    }
+  }
   const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL
   if (vercel) return `https://${vercel}`
   return "http://localhost:3000"
