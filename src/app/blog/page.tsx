@@ -35,8 +35,16 @@ export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL")
   const [categories, setCategories] = useState<string[]>(["ALL"])
   const [searchTerm, setSearchTerm] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [loadError, setLoadError] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+
+  // wait until typing pauses before searching (one request instead of one per keystroke)
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350)
+    return () => clearTimeout(t)
+  }, [searchTerm])
 
   useEffect(() => {
     const fetchBlogPosts = async () => {
@@ -44,7 +52,7 @@ export default function Blog() {
         setLoading(true)
         const params = new URLSearchParams()
         if (selectedCategory !== "ALL") params.append('category', selectedCategory)
-        if (searchTerm) params.append('search', searchTerm)
+        if (debouncedSearch) params.append('search', debouncedSearch)
         params.append('page', currentPage.toString())
         
         const response = await fetch(`/api/blog?${params}`)
@@ -52,8 +60,10 @@ export default function Blog() {
         const data = await response.json()
         setPosts(data.posts)
         setTotalPages(data.pagination?.pages || 1)
+        setLoadError(false)
       } catch (err) {
         console.error("Failed to load blog posts:", err)
+        setLoadError(true)
       } finally {
         setLoading(false)
       }
@@ -61,7 +71,7 @@ export default function Blog() {
 
     fetchBlogPosts()
     fetchCategories()
-  }, [selectedCategory, currentPage, searchTerm])
+  }, [selectedCategory, currentPage, debouncedSearch])
 
   const fetchCategories = async () => {
     try {
@@ -121,14 +131,6 @@ export default function Blog() {
               className="text-xl text-foreground/70"
             >
               Tips, tricks, and insights from our creative team
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-sm text-foreground/60 mt-4"
-            >
-              {posts.length} {posts.length === 1 ? 'post' : 'posts'} found
             </motion.p>
           </div>
         </section>
@@ -230,8 +232,22 @@ export default function Blog() {
           <div className="max-w-6xl mx-auto">
             {posts.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-foreground/60 text-lg">No blog posts found</p>
-                <p className="text-foreground/40 mt-2">Try a different category or search term</p>
+                {loadError ? (
+                  <>
+                    <p className="text-foreground/60 text-lg">We couldn&apos;t load the blog right now</p>
+                    <p className="text-foreground/40 mt-2">Please refresh the page in a moment.</p>
+                  </>
+                ) : debouncedSearch || selectedCategory !== "ALL" ? (
+                  <>
+                    <p className="text-foreground/60 text-lg">No blog posts found</p>
+                    <p className="text-foreground/40 mt-2">Try a different category or search term</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-foreground/60 text-lg">New stories are on the way</p>
+                    <p className="text-foreground/40 mt-2">Check back soon for tips and behind-the-scenes from our shoots.</p>
+                  </>
+                )}
               </div>
             ) : (
               <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

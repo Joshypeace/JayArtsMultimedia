@@ -20,7 +20,12 @@ function LoginForm() {
   const [approvalStatus, setApprovalStatus] = useState<"pending" | "rejected" | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/admin";
+  // Only follow same-site paths (blocks open redirects like ?callbackUrl=https://evil.com or //evil.com)
+  const rawCallback = searchParams.get("callbackUrl");
+  const callbackUrl =
+    rawCallback && rawCallback.startsWith("/") && !rawCallback.startsWith("//") && !rawCallback.startsWith("/\\")
+      ? rawCallback
+      : "/admin";
   const registered = searchParams.get("registered") === "true";
 
   const handleSubmit = async (e: FormEvent) => {

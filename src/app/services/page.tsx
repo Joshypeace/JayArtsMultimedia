@@ -25,8 +25,8 @@ const services = [
   {
     title: "Videography",
     description: "Cinematic video production for commercials, events, and content",
-    image: "/gallery/engagement-groom-aisle.jpg",
-    imagePosition: "50% 40%",
+    image: "/gallery/graduation-kneel-night.jpg",
+    imagePosition: "50% 55%",
     deliverables: [
       "4K video files",
       "Multiple formats",
@@ -56,8 +56,8 @@ const services = [
   {
     title: "Live Streaming",
     description: "Professional live streaming for events, conferences, and online content",
-    image: "/gallery/event-tent-wide.jpg",
-    imagePosition: "50% 50%",
+    image: "/gallery/graduation-friends.jpg",
+    imagePosition: "50% 35%",
     deliverables: [
       "Multi-camera setup",
       "Professional audio",
@@ -183,7 +183,7 @@ export default function Services() {
                     {/* CTA Button */}
                     <div className="mt-8">
                       <Link
-                        href={`/booking?service=${service.title}`}
+                        href={`/booking?service=${encodeURIComponent(service.title)}`}
                         className="inline-flex px-6 py-3 bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-lg font-medium hover:shadow-lg hover:shadow-primary/40 transition-all"
                       >
                         Book {service.title}

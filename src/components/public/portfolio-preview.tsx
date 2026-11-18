@@ -5,9 +5,9 @@ import Link from "next/link"
 import Image from "next/image"
 
 const portfolioItems = [
-  { id: 1, title: "Engagements & Weddings", category: "Photography", image: "/gallery/engagement-couple-walk.jpg" },
+  { id: 1, title: "Night Portraits", category: "Photography", image: "/gallery/graduation-bouquet.jpg" },
   { id: 2, title: "Graduation Portraits", category: "Photography", image: "/gallery/graduation-studio.jpg" },
-  { id: 3, title: "Events & Coverage", category: "Photography · Videography", image: "/gallery/event-venue-wide.jpg" },
+  { id: 3, title: "Editorial Shoots", category: "Photography", image: "/gallery/graduation-newspaper-sepia.jpg" },
 ]
 
 export default function PortfolioPreview() {

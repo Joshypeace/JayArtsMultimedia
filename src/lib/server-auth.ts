@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
 import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 
 /**
  * For API route handlers: returns a 401/403 response if the caller is not an
@@ -12,6 +13,14 @@ export async function adminApiGuard(): Promise<NextResponse | null> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
   if (session.user.role !== "ADMIN" && session.user.role !== "EDITOR") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+  // The JWT can be up to 30 days old: re-check the database so a suspended or
+  // demoted account loses API access immediately.
+  const dbUser = session.user.id
+    ? await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true, status: true } })
+    : null
+  if (!dbUser || dbUser.status !== "ACTIVE" || (dbUser.role !== "ADMIN" && dbUser.role !== "EDITOR")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
   return null
