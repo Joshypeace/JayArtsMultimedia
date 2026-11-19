@@ -143,8 +143,8 @@ export default function Contact() {
     { 
       icon: Mail, 
       label: "Email", 
-      value: "joelchilapondwa@gmail.com", 
-      href: "mailto:joelchilapondwa@gmail.com",
+      value: "jayartsmultimedia@gmail.com", 
+      href: "mailto:jayartsmultimedia@gmail.com",
       primary: true
     },
     { 
@@ -457,7 +457,7 @@ export default function Contact() {
                  <h3 className="font-semibold mb-4">Follow Us</h3>
                  <div className="flex gap-4">
                    {[
-                     { name: "Instagram", url: "https://www.instagram.com/jay_arts_multimedia?igsh=MWZ5YTl4Mjh3ZG9ndA%3D%3D&utm_source=qr", icon: siInstagram },
+                     { name: "Instagram", url: "https://www.instagram.com/jayartsmultimedia/", icon: siInstagram },
                      { name: "Facebook", url: "https://www.facebook.com/share/14Sc9c7Ddb2/?mibextid=wwXIfr", icon: siFacebook },
                    ].map((social) => (
                      <motion.a

@@ -40,8 +40,8 @@ const services = [
   {
     title: "Graphic Design",
     description: "Custom design solutions for brands, print, and digital",
-    image: "/service-design.jpg",
-    imagePosition: "50% 50%",
+    image: "/gallery/graduation-newspaper-sepia.jpg",
+    imagePosition: "50% 35%",
     deliverables: [
       "Logo files (All formats)",
       "Brand guidelines",

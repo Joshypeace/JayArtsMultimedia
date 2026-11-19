@@ -46,7 +46,7 @@ const teamMembers: TeamMember[] = [
     image: "/IMG_4769.JPEG",
     focus: "42% 20%",
     social: {
-      instagram: "https://www.instagram.com/jay_arts_multimedia?igsh=MWZ5YTl4Mjh3ZG9ndA%3D%3D&utm_source=qr",
+      instagram: "https://www.instagram.com/jayartsmultimedia/",
       facebook: "https://www.facebook.com/share/14Sc9c7Ddb2/?mibextid=wwXIfr"
     }
   },

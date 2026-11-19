@@ -23,13 +23,13 @@ export const siteConfig = {
   name: "JayArts Multimedia",
   description:
     "Photography, videography, graphic design and live streaming in Lilongwe, Malawi. Graduation portraits, events, brand shoots and more by JayArts Multimedia.",
-  email: "joelchilapondwa@gmail.com",
+  email: "jayartsmultimedia@gmail.com",
   phone: "+265884849879",
   locality: "Lilongwe",
   country: "MW",
   ogImage: "/og-image.jpg",
   social: {
-    instagram: "https://www.instagram.com/jay_arts_multimedia",
+    instagram: "https://www.instagram.com/jayartsmultimedia/",
     facebook: "https://www.facebook.com/share/14Sc9c7Ddb2/",
   },
 }

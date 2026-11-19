@@ -26,7 +26,7 @@ export default function Footer() {
   }
 
   const socialLinks = [
-    { icon: siInstagram, label: "Instagram", link: "https://www.instagram.com/jay_arts_multimedia?igsh=MWZ5YTl4Mjh3ZG9ndA%3D%3D&utm_source=qr" },
+    { icon: siInstagram, label: "Instagram", link: "https://www.instagram.com/jayartsmultimedia/" },
     { icon: siFacebook, label: "Facebook", link: "https://www.facebook.com/share/14Sc9c7Ddb2/?mibextid=wwXIfr" },
   ]
 
@@ -87,7 +87,7 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Contact</h3>
             <ul className="space-y-3">
               {[
-                { icon: Mail, text: "joelchilapondwa@gmail.com", href: "mailto:joelchilapondwa@gmail.com" },
+                { icon: Mail, text: "jayartsmultimedia@gmail.com", href: "mailto:jayartsmultimedia@gmail.com" },
                 { icon: Phone, text: "(+265) 884-849-879", href: "tel:+265884849879" },
                 { icon: MapPin, text: "Lilongwe, Malawi", href: undefined },
               ].map((item, idx) => {
