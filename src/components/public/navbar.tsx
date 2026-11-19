@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useState } from "react"
 import { Menu, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { BLOG_ENABLED } from "@/lib/features"
 
 export default function PublicNavBar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -14,7 +15,7 @@ export default function PublicNavBar() {
     { label: "About", href: "/about" },
     { label: "Services", href: "/services" },
     { label: "Portfolio", href: "/portfolio" },
-    { label: "Blog", href: "/blog" },
+    ...(BLOG_ENABLED ? [{ label: "Blog", href: "/blog" }] : []),
     { label: "Contact", href: "/contact" },
   ]
 

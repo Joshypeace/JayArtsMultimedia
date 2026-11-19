@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { BLOG_ENABLED } from "@/lib/features"
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -6,5 +8,7 @@ export const metadata: Metadata = {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  // While the blog is hidden, /blog and every /blog/<post> show the 404 page.
+  if (!BLOG_ENABLED) notFound()
   return children
 }
