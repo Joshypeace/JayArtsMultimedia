@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Mail, Phone, MapPin,  } from "lucide-react"
 import { siFacebook, siInstagram, } from "simple-icons"
 import { motion } from "framer-motion"
+import { BLOG_ENABLED } from "@/lib/features"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -71,7 +72,7 @@ export default function Footer() {
                 { label: "About", href: "/about" },
                 { label: "Services", href: "/services" },
                 { label: "Portfolio", href: "/portfolio" },
-                { label: "Blog", href: "/blog" },
+                ...(BLOG_ENABLED ? [{ label: "Blog", href: "/blog" }] : []),
               ].map((link) => (
                 <motion.li key={link.href} whileHover={{ x: 5 }} transition={{ type: "spring" }}>
                   <Link href={link.href} className="text-foreground/60 hover:text-primary text-sm transition-colors">
